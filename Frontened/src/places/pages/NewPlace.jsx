@@ -13,6 +13,7 @@ import authContext from "../../shared/context/auth-context";
 // Reducer function for managing form state
 import { useHttp } from "../../shared/hooks/http-hook";
 import { useNavigate } from "react-router-dom";
+import { ImageUpload } from "../../shared/components/FormElements/ImageUpload";
 const NewPlace = () => {
   const navigate = useNavigate();
   const auth = useContext(authContext);
@@ -30,19 +31,14 @@ const NewPlace = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const data = await sendRequest(
-        "http://localhost:5000/api/places",
-        "POST",
-        JSON.stringify({
-          title: formState.inputs.title.value,
-          description: formState.inputs.description.value,
-          address: formState.inputs.address.value,
-          creatorId: auth.creatorId,
-          image:
-            "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PFRUWFhURFRUYHSggGBolHRUVITEhJSkrLi4uFx8zODMtNygtLisBCgoKDQ0NDg0NDisZFRktKystKy0tLSsrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrK//AABEIALcBEwMBIgACEQEDEQH/xAAYAAEBAQEBAAAAAAAAAAAAAAAAAQIDB//EABcQAQEBAQAAAAAAAAAAAAAAAAABEQL/xAAVAQEBAAAAAAAAAAAAAAAAAAAAAf/EABQRAQAAAAAAAAAAAAAAAAAAAAD/2gAMAwEAAhEDEQA/APDpGpEjUAxcVaKzi4oImGNFBnDGsQVMTGigzhimCJiY0gqYYoCYmNAM4mNAM4Y0gMjSAgoIgAAACKgAANctxjluCqKQBUkawCQIoiIoCI0gJUDAQUBFEFAAEqoAioAACAAIqAACAIAADfLcY4bgqkiLAaEWCCykAVLABMTCgJRbUBKUAQAUAARUARQEAAQAEUBABBFQAAG+G4xw3BVAgjUEWAsBQRGqzQKisgFKAhoAIqChqLAEAAEAABAAEVAABBFQAAG+W2OWxSLEaEFhoClJQBK1WAVKaAiKlABAVAFAQCgAIoCAgAAAIAAIIqAAA3y2xy3BSNRlRGhlQUgAGGpoCWrqAaIgKRAUoIClCggACKgAIAAAioAAIIqAAA1y6Rz5bgqqhAVUAU0BAQAEoAgACoKAAgAAAIAAgAAAIAgAAioAADXLcYjUFaBNBVQAWVFEBABAAAFEUARagBQBAAEVAAAEAAAQAARUAABqNRiNQVoABUUAAAAEC0oIqAAAAACAACAqAACAACAAAAIAAACxqMxQaVlRVEUAAAKAAgAAAICiAAAggCgAIAAAIAAioAAAAAqoA0ICtCaAqs6A1qIaCiaACAKIAqAACAogCoAgAAAAgAAAAAAAoABoAaaALpoAaABqABpoAAAAAAAAAAAIAAAAAAAAAAAP/9k=",
-        }),
-        { "Content-Type": "application/json" }
-      );
+      let formData = new FormData();
+      formData.append("title", formState.inputs.title.value);
+      formData.append("description", formState.inputs.description.value);
+      formData.append("address", formState.inputs.address.value);
+      formData.append("image", formState.inputs.image.value);
+      await sendRequest("http://localhost:5000/api/places", "POST", formData, {
+        Authorization: "Bearer " + auth.token,
+      });
     } catch (err) {
       console.log(err);
     }
@@ -72,6 +68,7 @@ const NewPlace = () => {
           errorText="Please enter a valid description with a minimum length of 5 characters"
           onInput={inputHandler} // Pass inputHandler to the Input component
         />
+
         <Input
           id="address"
           type="text"
@@ -81,6 +78,7 @@ const NewPlace = () => {
           errorText="Please enter a valid address"
           onInput={inputHandler} // Pass inputHandler to the Input component
         />
+        <ImageUpload id="image" center onInput={inputHandler} />
         <Button type="submit" disabled={!formState.isValid}>
           ADD PLACE
         </Button>

@@ -5,10 +5,17 @@ import ErrorModal from "../../shared/components/UIElements/ErrorModal";
 import LoadingSpinner from "../../shared/components/UIElements/LoadingSpinner";
 import { useHttp } from "../../shared/hooks/http-hook";
 const UsersPlaces = () => {
-  const [loadedPlaces, setLoadedPlaces] = useState([]);
+  let [loadedPlaces, setLoadedPlaces] = useState([]);
   const { isLoading, error, sendRequest, ErrorHandler } = useHttp();
-
   const { uid } = useParams();
+
+  const deletePlace = async (placeId) => {
+    try {
+      setLoadedPlaces((prevPlaces) =>
+        prevPlaces.filter((place) => place._id !== placeId)
+      );
+    } catch (err) {}
+  };
 
   useEffect(() => {
     const fetchPlaces = async () => {
@@ -16,14 +23,12 @@ const UsersPlaces = () => {
         const responseData = await sendRequest(
           `http://localhost:5000/api/places/user/${uid}`
         );
-        console.log(responseData);
         setLoadedPlaces(responseData.places);
       } catch (err) {}
     };
     fetchPlaces();
   }, [sendRequest, uid]);
 
-  const PlacesToLoad = loadedPlaces.filter((place) => place.creatorId == uid);
   return (
     <>
       <ErrorModal onClear={ErrorHandler} error={error} />
@@ -32,7 +37,9 @@ const UsersPlaces = () => {
           <LoadingSpinner />
         </div>
       )}
-      {!isLoading && loadedPlaces && <PlaceList places={loadedPlaces} />}
+      {!isLoading && loadedPlaces && (
+        <PlaceList places={loadedPlaces} onDelete={deletePlace} />
+      )}
     </>
   );
 };

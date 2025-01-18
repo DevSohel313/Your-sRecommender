@@ -11,12 +11,16 @@ const Users = () => {
       try {
         const response = await sendRequest("http://localhost:5000/api/users");
         setUserData(response.users);
+        
       } catch (err) {
         console.log(err);
       }
     };
     RequestingFetch();
   }, [sendRequest]);
+
+
+
   return (
     <>
       <ErrorModal onClear={ErrorHandler} error={error} />

@@ -18,26 +18,25 @@ export const useHttp = () => {
         let response = await fetch(url, { method, body, headers, signal });
         let data = await response.json();
 
-        // Filter out the request controller that has completed.
+        // Remove completed request from active requests
         activeHttpRequests.current = activeHttpRequests.current.filter(
           (reqCtrl) => reqCtrl !== httpAbortController
         );
 
         if (!response.ok) {
-          throw new Error(data.message || "Something went wrong");
+          throw new Error(data.message || "Something went wrong!");
         }
 
-        setIsLoading(false);
-        return data;
+        setIsLoading(false); // Ensure loading state is updated
+        return data; // Return the resolved data
       } catch (err) {
         setError(err.message);
-        setIsLoading(false);
+        setIsLoading(false); // Stop loading even if there's an error
         throw err;
       }
     },
     []
   );
-
   const ErrorHandler = () => {
     setError(null);
   };

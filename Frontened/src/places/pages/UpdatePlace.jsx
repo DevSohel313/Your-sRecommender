@@ -1,4 +1,3 @@
-import React from "react";
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import LoadingSpinner from "../../shared/components/UIElements/LoadingSpinner";
@@ -10,14 +9,18 @@ import {
   VALIDATOR_MINLENGTH,
 } from "../../shared/util/validators";
 import "./PlaceForm.css";
+import { useContext } from "react";
+import authContext from "../../shared/context/auth-context";
 import useForm from "../../shared/hooks/useForm";
 import Card from "../../shared/components/UIElements/Card";
 import { useHttp } from "../../shared/hooks/http-hook";
-import { load } from "ol/Image";
+import { useNavigate } from "react-router-dom";
 
 const UpdatePlace = () => {
+  const auth = useContext(authContext);
   const { isLoading, error, ErrorHandler, sendRequest } = useHttp();
-  const pid = useParams().pid;
+  const pid = useParams().placeId;
+  const navigate = useNavigate();
   const [loadedPlace, setLoadedPlace] = useState([]);
   const [formState, inputHandler, setFormData] = useForm(
     {
@@ -40,15 +43,16 @@ const UpdatePlace = () => {
         const repsonse = await sendRequest(
           `http://localhost:5000/api/places/${pid}`
         );
-        setLoadedPlace(repsonse.UpdatedPlace);
+        console.log("res", repsonse);
+        setLoadedPlace(repsonse);
         setFormData(
           {
             title: {
-              value: repsonse.UpdatedPlace.title,
+              value: repsonse.title,
               isValid: true,
             },
             description: {
-              value: repsonse.UpdatePlace.description,
+              value: repsonse.description,
               isValid: true,
             },
           },
@@ -59,22 +63,38 @@ const UpdatePlace = () => {
     fetchPlaces();
   }, [sendRequest, pid, setFormData]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(formState.inputs);
+    await sendRequest(
+      `http://localhost:5000/api/places/${pid}`,
+      "PATCH",
+      JSON.stringify({
+        title: formState.inputs.title.value,
+        description: formState.inputs.description.value,
+      }),
+      {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + auth.token,
+      }
+    );
+    if (auth.creatorId) {
+      navigate(`/${auth.creatorId}/places`);
+    } else {
+      navigate(`/auth`);
+    }
   };
 
-  if (!loadedPlace && !error) {
-    return (
-      <div className="center">
-        <Card>Could not find place!</Card>
-      </div>
-    );
-  }
   if (isLoading) {
     return (
       <div className="center">
         <LoadingSpinner asOverlay />
+      </div>
+    );
+  }
+  if (!loadedPlace) {
+    return (
+      <div className="center">
+        <Card>Could not find place!</Card>
       </div>
     );
   }
@@ -92,8 +112,8 @@ const UpdatePlace = () => {
             validators={[VALIDATOR_REQUIRE()]}
             errorText="Please enter a valid title."
             onInput={inputHandler}
-            Initialvalue={formState.inputs.title.value}
-            Initialvalid={formState.inputs.title.isValid}
+            Initialvalue={loadedPlace.title}
+            Initialvalid={true}
           />
           <Input
             id="description"
@@ -102,8 +122,8 @@ const UpdatePlace = () => {
             validators={[VALIDATOR_MINLENGTH(5)]}
             errorText="Please enter a valid description (min. 5 characters)."
             onInput={inputHandler}
-            Initialvalue={formState.inputs.description.value}
-            Initialvalid={formState.inputs.description.isValid}
+            Initialvalue={loadedPlace.description}
+            Initialvalid={true}
           />
           <Button type="submit" disabled={!formState.isValid}>
             UPDATE PLACE

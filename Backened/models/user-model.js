@@ -11,6 +11,8 @@ const User = mongoose.Schema({
       ref: "Place", // This will link the Place model to the User model, allowing us to fetch related places
     },
   ],
+  resetToken: { type: String }, // For storing the password reset token
+  resetTokenExpiration: { type: Date }, // Token expiration time
 });
 
 User.plugin(uniqueValidator);

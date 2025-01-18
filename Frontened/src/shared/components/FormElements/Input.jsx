@@ -30,7 +30,6 @@ const Input = (props) => {
   const { value, isValid } = state;
 
   const { id, onInput } = props;
-
   useEffect(() => {
     onInput(id, value, isValid);
   }, [id, value, isValid, onInput]);
@@ -74,7 +73,7 @@ const Input = (props) => {
       }`}
     >
       <form>
-        <label htmlFor={props.id} >{props.label}</label>
+        <label htmlFor={props.id}>{props.label}</label>
         {element}
         {!state.isValid && state.isTouched && <p>{props.errorText}</p>}
       </form>

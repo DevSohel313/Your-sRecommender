@@ -3,16 +3,17 @@ import Input from "../../shared/components/FormElements/Input";
 import useForm from "../../shared/hooks/useForm";
 import Button from "../../shared/components/FormElements/Button";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import LoadingSpinner from "../../shared/components/UIElements/LoadingSpinner";
 import ErrorModal from "../../shared/components/UIElements/ErrorModal";
-
+import { useEffect } from "react";
 import {
   VALIDATOR_EMAIL,
   VALIDATOR_REQUIRE,
   VALIDATOR_MINLENGTH,
   VALIDATOR_MAXLENGTH,
 } from "../../shared/util/validators";
+import { ImageUpload } from "../../shared/components/FormElements/ImageUpload";
 import { useHttp } from "../../shared/hooks/http-hook";
 import { useContext } from "react";
 import authContext from "../../shared/context/auth-context";
@@ -20,9 +21,9 @@ import "./Authenticate.css";
 const Authenticate = () => {
   const auth = useContext(authContext);
   const [isLoginMode, setIsLoginMode] = useState(true);
+  const [hasUsers, setHasUsers] = useState(false);
   const { isLoading, error, sendRequest, ErrorHandler } = useHttp();
   const navigate = useNavigate();
-
   const switchModeHandler = () => {
     if (!isLoginMode) {
       // Switching to Login mode
@@ -30,6 +31,7 @@ const Authenticate = () => {
         {
           ...formState.inputs,
           name: undefined, // Remove the name field
+          image: undefined,
         },
         formState.inputs.email.isValid && formState.inputs.password.isValid
       );
@@ -40,6 +42,10 @@ const Authenticate = () => {
           ...formState.inputs,
           name: {
             value: "",
+            isValid: false,
+          },
+          image: {
+            value: null,
             isValid: false,
           },
         },
@@ -66,22 +72,22 @@ const Authenticate = () => {
 
   const authSubmitHandler = async (event) => {
     event.preventDefault();
-
     if (!isLoginMode) {
       try {
+        const formData = new FormData();
+        formData.append("image", formState.inputs.image.value);
+        formData.append("password", formState.inputs.password.value);
+        formData.append("email", formState.inputs.email.value);
+        formData.append("name", formState.inputs.name.value);
         const data = await sendRequest(
           "http://localhost:5000/api/users/signup",
           "POST",
-          JSON.stringify({
-            name: formState.inputs.name.value,
-            email: formState.inputs.email.value,
-            password: formState.inputs.password.value,
-          }),
+          formData,
           {
-            "Content-Type": "application/json",
+            credentials: "include",
           }
         );
-        auth.login(data.user._id);
+        auth.login(data.userId, data.token);
         navigate("/");
       } catch (err) {}
     } else {
@@ -95,32 +101,55 @@ const Authenticate = () => {
           }),
           {
             "Content-Type": "application/json",
+            credentials: "include",
           }
         );
-        auth.login(data.user._id);
+        auth.login(data.userId, data.token);
+
         navigate("/");
       } catch (err) {}
     }
   };
+
+  useEffect(() => {
+    const fetchHasUsers = async () => {
+      try {
+        const data = await sendRequest(
+          "http://localhost:5000/api/users/hasUsers"
+        );
+        setHasUsers(data.hasUsers);
+        if (!data.hasUsers) {
+          setIsLoginMode(false); // Default to signup mode if no users exist
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchHasUsers();
+  }, [sendRequest]);
 
   return (
     <>
       <ErrorModal onClear={ErrorHandler} error={error} />
       <Card className="authentication">
         {isLoading && <LoadingSpinner asOverlay />}
-        <h2>Login Required</h2>
+        {!isLoginMode ? <h2>Sign-Up !!</h2> : <h2>Login </h2>}
         <hr />
         <form onSubmit={authSubmitHandler}>
           {!isLoginMode && (
-            <Input
-              element="input"
-              id="name"
-              type="text"
-              label="Your Name"
-              validators={[VALIDATOR_REQUIRE()]}
-              errorText="Please enter a name."
-              onInput={inputHandler}
-            />
+            <>
+              <Input
+                element="input"
+                id="name"
+                type="text"
+                label="Your Name"
+                validators={[VALIDATOR_REQUIRE()]}
+                errorText="Please enter a name."
+                onInput={inputHandler}
+              />
+              <ImageUpload id="image" center onInput={inputHandler} />
+            </>
           )}
           <Input
             element="input"
@@ -143,8 +172,14 @@ const Authenticate = () => {
           <Button type="submit" disabled={!formState.isValid}>
             {isLoginMode ? "LOGIN" : "SIGNUP"}
           </Button>
+          <Link
+            to="/user/forgot-password"
+            className="hover:bg-blue-400 text-blue-500"
+          >
+            Forgot Password?
+          </Link>
         </form>
-        <Button inverse onClick={switchModeHandler}>
+        <Button inverse onClick={switchModeHandler} disabled={!hasUsers}>
           SWITCH TO {isLoginMode ? "SIGNUP" : "LOGIN"}
         </Button>
       </Card>

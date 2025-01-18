@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import TestSpinner from "../TestSpinner";
 import "./App.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
@@ -9,28 +9,50 @@ import NavLinks from "./shared/components/Navigation/NavLinks";
 import SideDrawer from "./shared/components/Navigation/SideDrawer";
 import UsersPlaces from "./places/pages/UsersPlaces";
 import UpdatePlace from "./places/pages/UpdatePlace";
+import { useEffect } from "react";
 import Authenticate from "./user/pages/Authenticate";
+import ForgotPassword from "./user/pages/forgotPassword";
+import ResetPassword from "./user/pages/ResetPassword";
 import authContext from "./shared/context/auth-context";
 import { useNavigate } from "react-router-dom";
 import { Navigate } from "react-router-dom";
-
 function App() {
   const [userId, setUserId] = useState(null);
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
-  const login = (userid) => {
-    setIsLoggedIn(true);
+  const [token, setToken] = useState(true);
+  const login = useCallback((userid, token) => {
+    setToken(token);
     setUserId(userid);
-  };
-  const logout = () => {
-    setIsLoggedIn(false);
+    localStorage.setItem(
+      "userData",
+      JSON.stringify({
+        userid: userid,
+        token: token,
+      })
+    );
+  }, []);
+
+  const logout = useCallback(() => {
+    setToken(null);
     setUserId(null);
-  };
+    localStorage.removeItem("userData");
+  }, []);
+
+  useEffect(() => {
+    const storedData = JSON.parse(localStorage.getItem("userData"));
+    if (storedData && storedData.token) {
+      login(storedData.userid, storedData.token);
+    } else {
+      setToken(null);
+      setUserId(null);
+    }
+  }, [login]);
 
   return (
     <authContext.Provider
       value={{
-        isLoggedIn: isLoggedIn,
+        isLoggedIn: !!token,
         creatorId: userId,
+        token: token,
         login: login,
         logout: logout,
       }}
@@ -40,7 +62,7 @@ function App() {
         <main>
           <Routes>
             <Route path="/" element={<Users />} />
-            {isLoggedIn && (
+            {token && (
               <>
                 <Route path="/:uid/places" element={<UsersPlaces />} />
                 <Route path="/places/new" element={<NewPlace />} />
@@ -49,6 +71,11 @@ function App() {
               </>
             )}
             <Route path="/:uid/places" element={<UsersPlaces />} />
+            <Route path="/user/forgot-password" element={<ForgotPassword />} />
+            <Route
+              path="/reset-password/:id/:token"
+              element={<ResetPassword />}
+            />
             <Route path="/auth" element={<Authenticate />} />
           </Routes>
         </main>
@@ -56,5 +83,4 @@ function App() {
     </authContext.Provider>
   );
 }
-
 export default App;

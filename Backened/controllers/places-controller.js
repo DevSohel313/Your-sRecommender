@@ -99,6 +99,7 @@ const updatePlacesByPId = async (req, res, next) => {
   }
   res.json({ UpdatedPlace: placetoUpdate });
 };
+
 const createNewPlace = async (req, res, next) => {
   const error = validationResult(req);
   if (!error.isEmpty()) {
@@ -138,8 +139,95 @@ const createNewPlace = async (req, res, next) => {
     return next(new httpError(500, "Failed to create place"));
   }
 };
+// In your backend places controller (controllers/places-controllers.js)
+
+// Advanced search implementation with better matching and sorting
+
+const searchPlaces = async (req, res, next) => {
+  const { type, query } = req.query;
+
+  if (!query || query.trim().length === 0) {
+    return res.json({ places: [] });
+  }
+
+  try {
+    let places;
+    const searchRegex = new RegExp(query, "i");
+
+    // Create a scoring function to rank results
+    const calculateScore = (text, searchQuery) => {
+      searchQuery = searchQuery.toLowerCase();
+      text = text.toLowerCase();
+
+      // Exact match gets highest score
+      if (text === searchQuery) return 100;
+
+      // Contains as whole word
+      if (new RegExp(`\\b${searchQuery}\\b`).test(text)) return 75;
+
+      // Contains as part of word
+      if (text.includes(searchQuery)) return 50;
+
+      // Partial match
+      return 25;
+    };
+
+    if (type === "title") {
+      places = await model.find({
+        $or: [
+          { title: searchRegex },
+          { description: searchRegex }, // Optional: include description in title search
+        ],
+      });
+
+      // Score and sort results
+      places = places
+        .map((place) => ({
+          ...place._doc,
+          score: calculateScore(place.title, query),
+        }))
+        .sort((a, b) => b.score - a.score)
+        .filter((place) => place.score > 25); // Only return relevant matches
+    } else if (type === "city") {
+      places = await model.find({ address: searchRegex });
+
+      // Score and sort results
+      places = places
+        .map((place) => ({
+          ...place._doc,
+          score: calculateScore(place.address, query),
+        }))
+        .sort((a, b) => b.score - a.score)
+        .filter((place) => place.score > 25);
+    }
+
+    console.log(`Found ${places.length} matches for "${query}" in ${type}`);
+
+    res.json({
+      places: places.map((place) => ({
+        id: place._id,
+        title: place.title,
+        description: place.description,
+        image: place.image,
+        address: place.address,
+        location: place.location,
+        creatorId: place.creator,
+      })),
+    });
+  } catch (err) {
+    console.error("Search error:", err);
+    return next(new Error("Searching places failed, please try again."));
+  }
+};
+
+// Make sure to export and add to routes
+exports.searchPlaces = searchPlaces;
+
+// In your routes file (routes/places-routes.js)
+
 exports.getPlacesByPId = getPlacesByPId;
 exports.getPlacesByUid = getPlacesByUid;
 exports.createNewPlace = createNewPlace;
 exports.deletePlaceByPId = deletePlaceByPId;
 exports.updatePlacesByPId = updatePlacesByPId;
+exports.searchPlaces = searchPlaces;

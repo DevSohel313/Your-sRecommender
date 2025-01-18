@@ -6,6 +6,7 @@ const { check } = require("express-validator");
 const authCheck = require("../middlewares/authCheck");
 const placesContoller = require("../controllers/places-controller");
 const fileUpload = require("../middlewares/fileUpload");
+Route.get("/search", placesContoller.searchPlaces);
 Route.get("/:pid", placesContoller.getPlacesByPId);
 Route.get("/user/:uid", placesContoller.getPlacesByUid);
 Route.use(authCheck);
@@ -15,7 +16,6 @@ Route.patch(
   placesContoller.updatePlacesByPId
 );
 Route.delete("/:pid", placesContoller.deletePlaceByPId);
-
 Route.post(
   "/",
   fileUpload.single("image"),
@@ -26,4 +26,5 @@ Route.post(
   ],
   placesContoller.createNewPlace
 );
+
 module.exports = Route;

@@ -3,6 +3,7 @@ import TestSpinner from "../TestSpinner";
 import "./App.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Users from "./user/pages/Users";
+import Home from "./Home";
 import NewPlace from "./places/pages/NewPlace";
 import MainNavigation from "./shared/components/Navigation/MainNavigation";
 import NavLinks from "./shared/components/Navigation/NavLinks";
@@ -16,9 +17,12 @@ import ResetPassword from "./user/pages/ResetPassword";
 import authContext from "./shared/context/auth-context";
 import { useNavigate } from "react-router-dom";
 import { Navigate } from "react-router-dom";
+import { useHttp } from "./shared/hooks/http-hook";
 function App() {
   const [userId, setUserId] = useState(null);
+  const { sendRequest } = useHttp();
   const [token, setToken] = useState(true);
+  const [searchResults, setSearchResults] = useState(null);
   const login = useCallback((userid, token) => {
     setToken(token);
     setUserId(userid);
@@ -47,6 +51,20 @@ function App() {
     }
   }, [login]);
 
+  const handleSearch = async (searchType, searchQuery) => {
+    try {
+      console.log("Search initiated with:", searchType, searchQuery);
+      const responseData = await sendRequest(
+        `http://localhost:5000/api/places/search?type=${searchType}&query=${searchQuery}`
+      );
+      console.log("Search results:", responseData);
+      setSearchResults(responseData.places);
+    } catch (err) {
+      console.error("Search failed:", err);
+      setSearchResults([]);
+    }
+  };
+
   return (
     <authContext.Provider
       value={{
@@ -58,10 +76,10 @@ function App() {
       }}
     >
       <Router>
-        <MainNavigation />
+        <MainNavigation onSearch={handleSearch} />
         <main>
           <Routes>
-            <Route path="/" element={<Users />} />
+            <Route path="/" element={<Users searchResults={searchResults} />} />
             {token && (
               <>
                 <Route path="/:uid/places" element={<UsersPlaces />} />

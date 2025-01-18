@@ -1,13 +1,14 @@
-import React from "react";
-import { Link } from "react-router-dom";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import MainHeader from "./MainHeader";
 import "./MainNavigation.css";
 import NavLinks from "./NavLinks";
 import SideDrawer from "./SideDrawer";
+import SearchBar from "../../../places/pages/SearchBar";
 
-const MainNavigation = (props) => {
+const MainNavigation = ({ onSearch }) => {
   const [drawerIsOpen, setDrawerIsOpen] = useState(false);
+
   const openDrawer = () => {
     setDrawerIsOpen(true);
   };
@@ -15,6 +16,7 @@ const MainNavigation = (props) => {
   const closeDrawer = () => {
     setDrawerIsOpen(false);
   };
+
   return (
     <>
       {drawerIsOpen && (
@@ -34,6 +36,7 @@ const MainNavigation = (props) => {
         <h1 className="main-navigation__title">
           <Link to="/">YourPlaces</Link>
         </h1>
+        <SearchBar onSearch={onSearch} />
         <nav className="main-navigation__header-nav">
           <NavLinks />
         </nav>

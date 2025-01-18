@@ -172,12 +172,19 @@ const Authenticate = () => {
           <Button type="submit" disabled={!formState.isValid}>
             {isLoginMode ? "LOGIN" : "SIGNUP"}
           </Button>
-          <Link
-            to="/user/forgot-password"
-            className="hover:bg-blue-400 text-blue-500"
-          >
-            Forgot Password?
-          </Link>
+          {isLoginMode && (
+            <Link
+              to="/user/forgot-password"
+              className="inline-block px-4 py-2 text-blue-500 hover:text-blue-900 
+    transition-all duration-300 hover:scale-105 
+    relative after:content-[''] after:absolute after:w-0 
+    after:h-0.5 after:left-0 after:bottom-0 
+    after:bg-blue-500 hover:after:w-full 
+    after:transition-all after:duration-300"
+            >
+              Forgot Password?
+            </Link>
+          )}
         </form>
         <Button inverse onClick={switchModeHandler} disabled={!hasUsers}>
           SWITCH TO {isLoginMode ? "SIGNUP" : "LOGIN"}

@@ -8,7 +8,7 @@ const SearchBar = ({ onSearch }) => {
 
   const searchHandler = (event) => {
     event.preventDefault();
-    console.log("SearchBar submitted:", searchType, searchQuery);
+
     onSearch(searchType, searchQuery);
   };
 

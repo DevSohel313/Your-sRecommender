@@ -11,10 +11,10 @@
 html {
   font-family: "Open Sans", sans-serif;
 }
-
 body {
   margin: 0;
-  background: #d8c4b6;
+  background: #f7f4f0;
+  min-height: 100vh;
 }
 
 .slide-in-left-enter {

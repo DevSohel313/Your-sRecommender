@@ -1,43 +1,32 @@
 .form-control {
   margin: 1rem 0;
+  position: relative;
+  background: white;
+  padding: 1rem;
+  border-radius: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: transform 0.2s ease;
 }
 
-.form-control label,
-.form-control input,
-.form-control textarea {
-  display: block;
-  resize: none;
-}
-
-.form-control label {
-  font-weight: bold;
-  margin-bottom: 0.5rem;
-  text-align: center;
+.form-control:hover {
+  transform: translateY(-2px);
 }
 
 .form-control input,
 .form-control textarea {
   width: 100%;
-  font: inherit;
-  border: 1px solid #ccc;
-  background: #f8f8f8;
-  padding: 0.15rem 0.25rem;
+  padding: 0.75rem 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 0.75rem;
+  background: #f8fafc;
+  font-size: 1rem;
+  transition: all 0.3s ease;
 }
 
 .form-control input:focus,
 .form-control textarea:focus {
   outline: none;
-  background: #ebebeb;
-  border-color: #510077;
-}
-
-.form-control--invalid label,
-.form-control--invalid p {
-  color: red;
-}
-
-.form-control--invalid input,
-.form-control--invalid textarea {
-  border-color: red;
-  background: #ffd1d1;
+  border-color: #4a90e2;
+  background: white;
+  box-shadow: 0 0 0 4px rgba(74, 144, 226, 0.1);
 }

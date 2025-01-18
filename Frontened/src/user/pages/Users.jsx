@@ -6,7 +6,7 @@ import LoadingSpinner from "../../shared/components/UIElements/LoadingSpinner";
 import ErrorModal from "../../shared/components/UIElements/ErrorModal";
 import { useHttp } from "../../shared/hooks/http-hook";
 
-const Users = ({ searchResults }) => {
+const Users = ({ searchResults, onClearSearch }) => {
   const [userData, setUserData] = useState([]);
   const { isLoading, error, sendRequest, ErrorHandler } = useHttp();
 
@@ -22,7 +22,15 @@ const Users = ({ searchResults }) => {
     RequestingFetch();
   }, [sendRequest]);
 
-  // If we have search results, show them instead of users list
+  // Clear search results when component unmounts
+  useEffect(() => {
+    return () => {
+      if (onClearSearch) {
+        onClearSearch();
+      }
+    };
+  }, [onClearSearch]);
+
   if (searchResults) {
     return (
       <>
@@ -42,7 +50,6 @@ const Users = ({ searchResults }) => {
     );
   }
 
-  // Default view showing users list
   return (
     <>
       <ErrorModal onClear={ErrorHandler} error={error} />
@@ -55,5 +62,4 @@ const Users = ({ searchResults }) => {
     </>
   );
 };
-
 export default Users;

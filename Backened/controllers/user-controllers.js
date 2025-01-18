@@ -125,6 +125,21 @@ const resetPassword = async (req, res, next) => {
     });
 };
 
+const getUserById = async (req, res, next) => {
+  const userId = req.params.userId;
+  try {
+    const user = await model.findById(userId, "-password");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json({ user });
+  } catch (err) {
+    return res.status(500).json({ message: "Fetching user failed" });
+  }
+};
+
+// Don't forget to export it
+exports.getUserById = getUserById;
 const userSignUp = async (req, res, next) => {
   const { name, email, password, image } = req.body;
 
@@ -169,3 +184,4 @@ exports.userSignUp = userSignUp;
 exports.hasUsers = hasUsers;
 exports.forgotPassword = forgotPassword;
 exports.resetPassword = resetPassword;
+exports.getUserById = getUserById;

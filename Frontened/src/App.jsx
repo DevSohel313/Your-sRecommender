@@ -3,6 +3,7 @@ import TestSpinner from "../TestSpinner";
 import "./App.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Users from "./user/pages/Users";
+import UserProfile from "./user/pages/UserProfile";
 import Home from "./Home";
 import NewPlace from "./places/pages/NewPlace";
 import MainNavigation from "./shared/components/Navigation/MainNavigation";
@@ -64,7 +65,9 @@ function App() {
       setSearchResults([]);
     }
   };
-
+  const clearSearchResults = useCallback(() => {
+    setSearchResults(null);
+  }, []);
   return (
     <authContext.Provider
       value={{
@@ -76,15 +79,27 @@ function App() {
       }}
     >
       <Router>
-        <MainNavigation onSearch={handleSearch} />
+        <MainNavigation
+          onSearch={handleSearch}
+          onClearSearch={clearSearchResults}
+        />
         <main>
           <Routes>
-            <Route path="/" element={<Users searchResults={searchResults} />} />
+            <Route
+              path="/"
+              element={
+                <Users
+                  searchResults={searchResults}
+                  onClearSearch={clearSearchResults}
+                />
+              }
+            />
             {token && (
               <>
                 <Route path="/:uid/places" element={<UsersPlaces />} />
                 <Route path="/places/new" element={<NewPlace />} />
                 <Route path="/places/:placeId" element={<UpdatePlace />} />
+                <Route path="/profile" element={<UserProfile />} />
                 <Route path="*" element={<Navigate to="/" />} />
               </>
             )}

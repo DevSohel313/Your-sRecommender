@@ -11,7 +11,6 @@ import {
   VALIDATOR_EMAIL,
   VALIDATOR_REQUIRE,
   VALIDATOR_MINLENGTH,
-  VALIDATOR_MAXLENGTH,
 } from "../../shared/util/validators";
 import { ImageUpload } from "../../shared/components/FormElements/ImageUpload";
 import { useHttp } from "../../shared/hooks/http-hook";
@@ -89,7 +88,9 @@ const Authenticate = () => {
         );
         auth.login(data.userId, data.token);
         navigate("/");
-      } catch (err) {}
+      } catch (err) {
+        console.log(err.message);
+      }
     } else {
       try {
         const data = await sendRequest(
@@ -107,7 +108,9 @@ const Authenticate = () => {
         auth.login(data.userId, data.token);
 
         navigate("/");
-      } catch (err) {}
+      } catch (err) {
+        console.log(err.message);
+      }
     }
   };
 
@@ -117,6 +120,7 @@ const Authenticate = () => {
         const data = await sendRequest(
           "http://localhost:5000/api/users/hasUsers"
         );
+
         setHasUsers(data.hasUsers);
         if (!data.hasUsers) {
           setIsLoginMode(false); // Default to signup mode if no users exist
@@ -134,7 +138,7 @@ const Authenticate = () => {
       <ErrorModal onClear={ErrorHandler} error={error} />
       <Card className="authentication">
         {isLoading && <LoadingSpinner asOverlay />}
-        {!isLoginMode ? <h2>Sign-Up !!</h2> : <h2>Login </h2>}
+        {!isLoginMode ? <h2>Create Your Account</h2> : <h2>Login </h2>}
         <hr />
         <form onSubmit={authSubmitHandler}>
           {!isLoginMode && (
@@ -186,6 +190,7 @@ const Authenticate = () => {
             </Link>
           )}
         </form>
+
         <Button inverse onClick={switchModeHandler} disabled={!hasUsers}>
           SWITCH TO {isLoginMode ? "SIGNUP" : "LOGIN"}
         </Button>

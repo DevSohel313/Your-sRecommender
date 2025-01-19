@@ -17,6 +17,7 @@ import ForgotPassword from "./user/pages/forgotPassword";
 import ResetPassword from "./user/pages/ResetPassword";
 import authContext from "./shared/context/auth-context";
 import { useNavigate } from "react-router-dom";
+import UpdateProfile from "./user/pages/UpdateProfile";
 import { Navigate } from "react-router-dom";
 import { useHttp } from "./shared/hooks/http-hook";
 function App() {
@@ -100,6 +101,7 @@ function App() {
                 <Route path="/places/new" element={<NewPlace />} />
                 <Route path="/places/:placeId" element={<UpdatePlace />} />
                 <Route path="/profile" element={<UserProfile />} />
+                <Route path="/update-profile" element={<UpdateProfile />} />
                 <Route path="*" element={<Navigate to="/" />} />
               </>
             )}

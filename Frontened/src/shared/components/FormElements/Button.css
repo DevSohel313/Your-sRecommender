@@ -42,3 +42,9 @@ button.button {
   display: inline-block;
   font-size: 1rem;
 }
+.button--disabled {
+  color: #00000029; /* Darker gray text */
+  cursor: not-allowed; /* Prevent hover and pointer events */
+  border-color: transparent;
+  background: #6d91e0;
+}

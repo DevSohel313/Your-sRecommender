@@ -5,7 +5,16 @@ app.use(express.json());
 const Route = express.Router();
 const userController = require("../controllers/user-controllers");
 const fileUpload = require("../middlewares/fileUpload");
+const authCheck = require("../middlewares/authCheck");
 Route.get("/", userController.getUsers);
+Route.patch(
+  "/:userId",
+  authCheck,
+  fileUpload.single("image"),
+  [check("name").not().isEmpty().withMessage("Name is required")],
+  userController.updateUser
+);
+Route.get("/hasUsers", userController.hasUsers);
 Route.get("/:userId", userController.getUserById);
 
 Route.post(
@@ -29,6 +38,7 @@ Route.post(
   },
   userController.userSignUp
 );
+// Backend routes - user-routes.js (add this route)
 
 Route.post(
   "/forgot-password",
@@ -38,7 +48,6 @@ Route.post(
 
 Route.post("/reset-password/:id/:token", userController.resetPassword);
 
-Route.get("/hasUsers", userController.hasUsers);
 Route.post(
   "/login",
   [check("email").isEmail(), check("password").isLength({ min: 4, max: 12 })],

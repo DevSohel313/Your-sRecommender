@@ -48,7 +48,9 @@ const userLogin = async (req, res, next) => {
 
 const hasUsers = async (req, res) => {
   try {
+    console.log("fetching users...");
     const userCount = await model.find({});
+    console.log("usercnt", userCount);
     res.status(200).json({ hasUsers: userCount.length > 0 });
   } catch (err) {
     res.status(500).json({ message: "Fetching user data failed." });
@@ -138,8 +140,37 @@ const getUserById = async (req, res, next) => {
   }
 };
 
-// Don't forget to export it
-exports.getUserById = getUserById;
+const updateUser = async (req, res, next) => {
+  const { userId } = req.params;
+  const { name } = req.body;
+
+  try {
+    // Validate input
+    if (!name) {
+      return res.status(400).json({ message: "Name is required" });
+    }
+
+    // Find user and update
+    const user = await model.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    user.name = name;
+
+    if (req.file) {
+      user.image = req.file.path; // Update image path
+    }
+
+    await user.save();
+
+    return res.status(200).json({ user });
+  } catch (error) {
+    console.error("Error updating user:", error);
+    return res.status(500).json({ message: "Updating user failed" });
+  }
+};
+
 const userSignUp = async (req, res, next) => {
   const { name, email, password, image } = req.body;
 
@@ -185,3 +216,4 @@ exports.hasUsers = hasUsers;
 exports.forgotPassword = forgotPassword;
 exports.resetPassword = resetPassword;
 exports.getUserById = getUserById;
+exports.updateUser = updateUser;

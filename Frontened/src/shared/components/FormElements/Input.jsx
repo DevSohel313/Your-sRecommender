@@ -61,6 +61,7 @@ const Input = (props) => {
         id={props.id}
         value={state.value}
         onChange={handleChange}
+        placeholder={props.placeholder}
         onBlur={handleBlur} // Add the onBlur handler here
         rows={props.rows || 3}
       />

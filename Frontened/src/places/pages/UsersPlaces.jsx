@@ -12,6 +12,13 @@ const UsersPlaces = ({ searchResults }) => {
     return <PlaceList places={searchResults} />;
   }
 
+  const deletePlace = async (placeId) => {
+    try {
+      setLoadedPlaces((prevPlaces) =>
+        prevPlaces.filter((place) => place._id !== placeId)
+      );
+    } catch (err) {}
+  };
   useEffect(() => {
     const fetchPlaces = async () => {
       try {
@@ -32,7 +39,9 @@ const UsersPlaces = ({ searchResults }) => {
           <LoadingSpinner />
         </div>
       )}
-      {!isLoading && loadedPlaces && <PlaceList places={loadedPlaces} />}
+      {!isLoading && loadedPlaces && (
+        <PlaceList places={loadedPlaces} onDelete={deletePlace} />
+      )}
     </>
   );
 };

@@ -15,7 +15,13 @@ export const useHttp = () => {
       activeHttpRequests.current.push(httpAbortController);
 
       try {
-        let response = await fetch(url, { method, body, headers, signal });
+        let response = await fetch(url, {
+          method,
+          body,
+          headers,
+          signal,
+          credentials: "include",
+        });
         let data = await response.json();
 
         // Remove completed request from active requests

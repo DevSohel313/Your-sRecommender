@@ -1,37 +1,27 @@
 .authentication {
   width: 90%;
   max-width: 28rem;
-  margin: 3rem auto;
+  margin: 2rem auto; /* Adjust margin to make the form slightly closer to the top */
   text-align: center;
   background: linear-gradient(145deg, #f3f4f6 0%, #ffffff 100%);
   border-radius: 1.5rem;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
-  padding: 2rem;
+  padding: 1.5rem; /* Reduced padding for a more compact layout */
   position: relative;
   overflow: hidden;
 }
 
-.authentication::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 6px;
-  background: linear-gradient(90deg, #4a90e2, #357abd);
-}
-
 .authentication h2 {
   color: #2d3748;
-  font-size: 2rem;
-  margin-bottom: 1.5rem;
+  font-size: 1.8rem; /* Reduced font size for heading */
+  margin-bottom: 1rem; /* Reduced bottom margin */
   font-weight: 700;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .authentication hr {
   border: none;
-  height: 2px;
+  height: 1px; /* Reduced thickness */
   background: linear-gradient(
     90deg,
     transparent 0%,
@@ -40,5 +30,5 @@
     rgba(74, 144, 226, 0.2) 75%,
     transparent 100%
   );
-  margin: 1.5rem 0;
+  margin: 1rem 0; /* Reduced margin to minimize vertical space */
 }

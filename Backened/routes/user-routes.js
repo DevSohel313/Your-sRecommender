@@ -19,7 +19,7 @@ Route.get("/:userId", userController.getUserById);
 
 Route.post(
   "/signup",
-  fileUpload.single("image"),
+  fileUpload.single("image"), 
   [
     check("name").not().isEmpty().withMessage("Please enter your name"),
     check("password")

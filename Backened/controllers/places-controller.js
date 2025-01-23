@@ -9,14 +9,24 @@ const userModel = require("../models/user-model");
 const fs = require("fs");
 
 const getPlacesByPId = async (req, res, next) => {
-  const id = req.params.pid;
-
-  const place = await model.findOne({ _id: id }).populate("creatorId");
-  if (place) {
-    return res.json(place);
-  } else {
-    const error = new httpError(404, `Place with id ${id} not found`);
-    return next(error);
+  const placeId = req.params.pid;
+  let place;
+  try {
+    place = await model.findById(placeId);
+    if (!place) {
+      return next(
+        new Error("Could not find a place for the provided id.", 404)
+      );
+    }
+    res.json({
+      place: place.toObject({ getters: true }),
+      totalLikes: place.totalLikes,
+      totalDislikes: place.totalDislikes,
+    });
+  } catch (err) {
+    return next(
+      new Error("Something went wrong, could not find a place.", 500)
+    );
   }
 };
 
@@ -220,14 +230,109 @@ const searchPlaces = async (req, res, next) => {
   }
 };
 
-// Make sure to export and add to routes
-exports.searchPlaces = searchPlaces;
+const RateThePlace = async (req, res, next) => {
+  const { rating } = req.body;
+  const placeId = req.params.pid;
+  const userId = req.userData.userId;
 
-// In your routes file (routes/places-routes.js)
+  try {
+    const place = await model.findById(placeId);
 
+    if (!place) {
+      return res.status(404).json({ message: "Place not found" });
+    }
+
+    // Check if user has already rated
+    const existingRating = place.ratings.find(
+      (r) => r.userId.toString() === userId.toString()
+    );
+
+    if (existingRating) {
+      // Update existing rating
+      if (existingRating.rating !== rating) {
+        // Update totals
+        if (existingRating.rating === 1) place.totalLikes--;
+        if (existingRating.rating === -1) place.totalDislikes--;
+        if (rating === 1) place.totalLikes++;
+        if (rating === -1) place.totalDislikes++;
+
+        existingRating.rating = rating;
+        existingRating.createdAt = Date.now();
+      }
+    } else {
+      // Add new rating
+      place.ratings.push({
+        userId,
+        rating,
+        createdAt: Date.now(),
+      });
+
+      if (rating === 1) place.totalLikes++;
+      if (rating === -1) place.totalDislikes++;
+    }
+
+    await place.save();
+
+    res.json({
+      message: "Rating updated successfully",
+      totalLikes: place.totalLikes,
+      totalDislikes: place.totalDislikes,
+    });
+  } catch (err) {
+    return next(new Error("Rating failed, please try again."));
+  }
+};
+
+const getUserRating = async (req, res, next) => {
+  const placeId = req.params.pid;
+  const userId = req.userData.userId;
+
+  try {
+    const place = await model.findById(placeId);
+
+    if (!place) {
+      return res.status(404).json({ message: "Place not found" });
+    }
+
+    const userRating = place.ratings.find(
+      (r) => r.userId.toString() === userId.toString()
+    );
+
+    res.json({
+      rating: userRating ? userRating.rating : null,
+    });
+  } catch (err) {
+    return next(new Error("Getting user rating failed, please try again."));
+  }
+};
+
+const getAllPlaces = async (req, res, next) => {
+  let places;
+  try {
+    places = await model
+      .find({})
+      .populate("creatorId", "name image") // This will include user details if needed
+      .sort({ createdAt: -1 }); // Optional: sort by newest first
+  } catch (err) {
+    return next(
+      new Error("Fetching places failed, please try again later.", 500)
+    );
+  }
+
+  if (!places || places.length === 0) {
+    return res.json({ places: [] });
+  }
+
+  res.json({
+    places: places.map((place) => place.toObject({ getters: true })),
+  });
+};
 exports.getPlacesByPId = getPlacesByPId;
 exports.getPlacesByUid = getPlacesByUid;
 exports.createNewPlace = createNewPlace;
 exports.deletePlaceByPId = deletePlaceByPId;
 exports.updatePlacesByPId = updatePlacesByPId;
 exports.searchPlaces = searchPlaces;
+exports.RateThePlace = RateThePlace;
+exports.getUserRating = getUserRating;
+exports.getAllPlaces = getAllPlaces;

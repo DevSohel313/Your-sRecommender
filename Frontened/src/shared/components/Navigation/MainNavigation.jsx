@@ -5,14 +5,18 @@ import "./MainNavigation.css";
 import NavLinks from "./NavLinks";
 import SideDrawer from "./SideDrawer";
 import SearchBar from "../../../places/pages/SearchBar";
-import { FcHome } from "react-icons/fc";
-import { MapPin, Search, Menu } from "lucide-react";
+import { MapPin, Menu } from "lucide-react";
+import { useLocation } from "react-router-dom";
 
 const MainNavigation = ({ onSearch, onClearSearch }) => {
   const [drawerIsOpen, setDrawerIsOpen] = useState(false);
+  const location = useLocation();
 
   const openDrawer = () => setDrawerIsOpen(true);
   const closeDrawer = () => setDrawerIsOpen(false);
+
+  // Only show search bar on /places/all route
+  const shouldShowSearch = location.pathname === "/places/all";
 
   return (
     <>
@@ -49,7 +53,12 @@ const MainNavigation = ({ onSearch, onClearSearch }) => {
           </Link>
         </h1>
 
-        <SearchBar onSearch={onSearch} />
+        {/* Conditionally render SearchBar only on /places/all */}
+        {shouldShowSearch && (
+          <div className="mx-4">
+            <SearchBar onSearch={onSearch} />
+          </div>
+        )}
 
         <nav className="main-navigation__header-nav">
           <NavLinks onClearSearch={onClearSearch} />

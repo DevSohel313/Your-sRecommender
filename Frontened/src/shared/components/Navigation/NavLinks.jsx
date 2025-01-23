@@ -7,6 +7,7 @@ const NavLinks = ({ onClearSearch }) => {
   const location = useLocation();
   const auth = useContext(authContext);
   const isForgotPasswordPage = location.pathname === "/user/forgot-password";
+  const isHomePage = location.pathname === "/";
 
   const handleNavClick = () => {
     if (onClearSearch) {
@@ -20,7 +21,7 @@ const NavLinks = ({ onClearSearch }) => {
         {auth.isLoggedIn && (
           <li>
             <NavLink
-              to={`/profile`}
+              to={`/profile/${auth.creatorId}`}
               onClick={handleNavClick}
               className={({ isActive }) =>
                 `px-4 py-2 rounded-lg transition-all duration-200 ${
@@ -34,6 +35,22 @@ const NavLinks = ({ onClearSearch }) => {
             </NavLink>
           </li>
         )}
+        <li>
+          <NavLink
+            to="/places/all"
+            onClick={handleNavClick}
+            className={({ isActive }) =>
+              `px-4 py-2 rounded-lg transition-all duration-200 ${
+                isActive
+                  ? "bg-yellow-400 text-gray-900 shadow-md"
+                  : "text-gray-700 hover:bg-yellow-100"
+              }`
+            }
+          >
+            All Places
+          </NavLink>
+        </li>
+
         {isForgotPasswordPage ? (
           <>
             <li>
@@ -104,7 +121,7 @@ const NavLinks = ({ onClearSearch }) => {
             {auth.isLoggedIn && (
               <li>
                 <NavLink
-                  to={`/${auth.creatorId}/places`}
+                  to="/about"
                   onClick={handleNavClick}
                   className={({ isActive }) =>
                     `px-4 py-2 rounded-lg transition-all duration-200 ${
@@ -114,7 +131,7 @@ const NavLinks = ({ onClearSearch }) => {
                     }`
                   }
                 >
-                  My Places
+                  About
                 </NavLink>
               </li>
             )}

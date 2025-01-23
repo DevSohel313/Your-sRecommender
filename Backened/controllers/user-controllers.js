@@ -129,8 +129,10 @@ const resetPassword = async (req, res, next) => {
 
 const getUserById = async (req, res, next) => {
   const userId = req.params.userId;
+  console.log(userId);
   try {
     const user = await model.findById(userId, "-password");
+    console.log(user);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }

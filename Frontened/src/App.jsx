@@ -3,6 +3,7 @@ import TestSpinner from "../TestSpinner";
 import "./App.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Users from "./user/pages/Users";
+import AboutPage from "./user/pages/AboutPage";
 import UserProfile from "./user/pages/UserProfile";
 import Home from "./Home";
 import NewPlace from "./places/pages/NewPlace";
@@ -15,6 +16,7 @@ import { useEffect } from "react";
 import Authenticate from "./user/pages/Authenticate";
 import ForgotPassword from "./user/pages/forgotPassword";
 import ResetPassword from "./user/pages/ResetPassword";
+import AllPlaces from "./places/pages/AllPlaces";
 import authContext from "./shared/context/auth-context";
 import { useNavigate } from "react-router-dom";
 import UpdateProfile from "./user/pages/UpdateProfile";
@@ -60,7 +62,14 @@ function App() {
         `http://localhost:5000/api/places/search?type=${searchType}&query=${searchQuery}`
       );
       console.log("Search results:", responseData);
-      setSearchResults(responseData.places);
+
+      // Add explicit validation of the response
+      if (responseData && Array.isArray(responseData.places)) {
+        setSearchResults(responseData.places);
+      } else {
+        console.warn("Invalid search response format:", responseData);
+        setSearchResults([]);
+      }
     } catch (err) {
       console.error("Search failed:", err);
       setSearchResults([]);
@@ -86,6 +95,7 @@ function App() {
         />
         <main>
           <Routes>
+            {/* Public Routes */}
             <Route
               path="/"
               element={
@@ -95,27 +105,49 @@ function App() {
                 />
               }
             />
-            {token && (
-              <>
-                <Route path="/:uid/places" element={<UsersPlaces />} />
-                <Route path="/places/new" element={<NewPlace />} />
-                <Route path="/places/:placeId" element={<UpdatePlace />} />
-                <Route path="/profile" element={<UserProfile />} />
-                <Route path="/update-profile" element={<UpdateProfile />} />
-                <Route path="*" element={<Navigate to="/" />} />
-              </>
-            )}
-            <Route path="/:uid/places" element={<UsersPlaces />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route
+              path="/:uid/places"
+              element={
+                <UsersPlaces
+                  searchResults={searchResults}
+                  onClearSearch={clearSearchResults}
+                />
+              }
+            />
+            <Route path="/profile/:userId" element={<UserProfile />} />
             <Route path="/user/forgot-password" element={<ForgotPassword />} />
+            <Route
+              path="/places/all"
+              element={
+                <AllPlaces
+                  searchResults={searchResults}
+                  onClearSearch={clearSearchResults}
+                />
+              }
+            />
             <Route
               path="/reset-password/:id/:token"
               element={<ResetPassword />}
             />
             <Route path="/auth" element={<Authenticate />} />
+
+            {/* Protected Routes */}
+            {token ? (
+              <>
+                <Route path="/places/new" element={<NewPlace />} />
+                <Route path="/places/:placeId" element={<UpdatePlace />} />
+                <Route path="/update-profile" element={<UpdateProfile />} />
+              </>
+            ) : null}
+
+            {/* Catch-all route - Must be last */}
+            <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </main>
       </Router>
     </authContext.Provider>
   );
 }
+
 export default App;

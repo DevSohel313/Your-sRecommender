@@ -4,13 +4,11 @@ import { useEffect, useState } from "react";
 import ErrorModal from "../../shared/components/UIElements/ErrorModal";
 import LoadingSpinner from "../../shared/components/UIElements/LoadingSpinner";
 import { useHttp } from "../../shared/hooks/http-hook";
-const UsersPlaces = ({ searchResults }) => {
-  let [loadedPlaces, setLoadedPlaces] = useState([]);
-  const { isLoading, error, sendRequest, ErrorHandler } = useHttp();
+
+const UsersPlaces = ({ searchResults, onClearSearch }) => {
+  const [loadedPlaces, setLoadedPlaces] = useState([]);
+  const { isLoading, error, sendRequest, clearError } = useHttp();
   const { uid } = useParams();
-  if (searchResults) {
-    return <PlaceList places={searchResults} />;
-  }
 
   const deletePlace = async (placeId) => {
     try {
@@ -19,30 +17,39 @@ const UsersPlaces = ({ searchResults }) => {
       );
     } catch (err) {}
   };
+
   useEffect(() => {
-    const fetchPlaces = async () => {
-      try {
-        const responseData = await sendRequest(
-          `http://localhost:5000/api/places/user/${uid}`
-        );
-        setLoadedPlaces(responseData.places);
-      } catch (err) {}
-    };
-    fetchPlaces();
-  }, [sendRequest, uid]);
+    if (!searchResults) {
+      const fetchPlaces = async () => {
+        try {
+          const responseData = await sendRequest(
+            `http://localhost:5000/api/places/user/${uid}`
+          );
+          setLoadedPlaces(responseData.places);
+        } catch (err) {}
+      };
+      fetchPlaces();
+    }
+  }, [sendRequest, uid, searchResults]);
 
   return (
     <>
-      <ErrorModal onClear={ErrorHandler} error={error} />
+      <ErrorModal error={error} onClear={clearError} />
       {isLoading && (
         <div className="center">
           <LoadingSpinner />
         </div>
       )}
-      {!isLoading && loadedPlaces && (
-        <PlaceList places={loadedPlaces} onDelete={deletePlace} />
+      {searchResults ? (
+        <PlaceList places={searchResults} onDelete={deletePlace} />
+      ) : (
+        !isLoading &&
+        loadedPlaces && (
+          <PlaceList places={loadedPlaces} onDelete={deletePlace} />
+        )
       )}
     </>
   );
 };
+
 export default UsersPlaces;

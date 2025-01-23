@@ -11,54 +11,54 @@ const Users = ({ searchResults, onClearSearch }) => {
   const { isLoading, error, sendRequest, ErrorHandler } = useHttp();
 
   useEffect(() => {
-    const RequestingFetch = async () => {
-      try {
-        const response = await sendRequest("http://localhost:5000/api/users");
-        setUserData(response.users);
-      } catch (err) {
-        console.log(err);
-      }
-    };
-    RequestingFetch();
-  }, [sendRequest]);
+    // Only fetch users if we're not showing search results
+    if (!searchResults) {
+      const fetchUsers = async () => {
+        try {
+          const response = await sendRequest("http://localhost:5000/api/users");
+          setUserData(response.users);
+        } catch (err) {
+          console.log(err);
+        }
+      };
+      fetchUsers();
+    }
+  }, [sendRequest, searchResults]);
 
-  // Clear search results when component unmounts
-  useEffect(() => {
-    return () => {
-      if (onClearSearch) {
-        onClearSearch();
-      }
-    };
-  }, [onClearSearch]);
+  // This is important: Separate the render logic clearly
+  const renderContent = () => {
+    if (isLoading) {
+      return (
+        <div className="center">
+          <LoadingSpinner asOverlay />
+        </div>
+      );
+    }
 
-  if (searchResults) {
-    return (
-      <>
-        <ErrorModal onClear={ErrorHandler} error={error} />
-        {isLoading && (
-          <div className="center">
-            <LoadingSpinner asOverlay />
-          </div>
-        )}
+    if (searchResults !== null) {
+      return (
         <div className="place-list-container">
           <h2 className="text-xl font-bold mb-4 text-center">
-            {searchResults.length === 0 ? "No places found" : "Search Results"}
+            Search Results ({searchResults.length} places found)
           </h2>
           <PlaceList places={searchResults} />
+          <button
+            onClick={onClearSearch}
+            className="mt-4 px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300"
+          >
+            Clear Search
+          </button>
         </div>
-      </>
-    );
-  }
+      );
+    }
+
+    return userData && <UserList items={userData} />;
+  };
 
   return (
     <>
       <ErrorModal onClear={ErrorHandler} error={error} />
-      {isLoading && (
-        <div className="center">
-          <LoadingSpinner asOverlay />
-        </div>
-      )}
-      {!isLoading && userData && <UserList items={userData} />}
+      {renderContent()}
     </>
   );
 };

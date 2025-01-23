@@ -61,7 +61,6 @@ const NewPlace = () => {
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100 p-4">
       <ErrorModal error={error} onClear={ErrorHandler} />
-
       <div className="w-full max-w-lg bg-white shadow-lg rounded-lg overflow-hidden">
         <div className="bg-pink-600 p-4">
           <h2 className="text-xl font-semibold text-white text-center">
@@ -85,7 +84,7 @@ const NewPlace = () => {
               validators={[VALIDATOR_REQUIRE()]}
               errorText="Please enter a valid title."
               onInput={inputHandler}
-              placeholder="Enter the title of the place"
+              placeholder="Enter title of the place"
               className="mb-2"
             />
 

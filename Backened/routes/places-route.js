@@ -4,18 +4,29 @@ app.use(express.json());
 const Route = express.Router();
 const { check } = require("express-validator");
 const authCheck = require("../middlewares/authCheck");
-const placesContoller = require("../controllers/places-controller");
+const placesController = require("../controllers/places-controller");
 const fileUpload = require("../middlewares/fileUpload");
-Route.get("/search", placesContoller.searchPlaces);
-Route.get("/:pid", placesContoller.getPlacesByPId);
-Route.get("/user/:uid", placesContoller.getPlacesByUid);
+
+// Public routes (no auth required)
+Route.get("/search", placesController.searchPlaces);
+Route.get("/:pid", placesController.getPlacesByPId);
+Route.get("/user/:uid", placesController.getPlacesByUid);
+Route.get("/", placesController.getAllPlaces);
+
+// Apply authCheck middleware for all routes below this
 Route.use(authCheck);
+
+// Rating routes
+Route.get("/:pid/userrating", placesController.getUserRating); // Get user's rating
+Route.post("/:pid/rate", placesController.RateThePlace); // Set/update rating
+
+// Other protected routes
 Route.patch(
   "/:pid",
   [check("title").not().isEmpty(), check("description").isLength({ min: 5 })],
-  placesContoller.updatePlacesByPId
+  placesController.updatePlacesByPId
 );
-Route.delete("/:pid", placesContoller.deletePlaceByPId);
+Route.delete("/:pid", placesController.deletePlaceByPId);
 Route.post(
   "/",
   fileUpload.single("image"),
@@ -24,7 +35,7 @@ Route.post(
     check("description").isLength({ min: 5 }),
     check("address").not().isEmpty(),
   ],
-  placesContoller.createNewPlace
+  placesController.createNewPlace
 );
 
 module.exports = Route;

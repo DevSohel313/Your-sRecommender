@@ -6,18 +6,39 @@ const Place = mongoose.Schema({
   address: { type: String, required: true },
   image: { type: String },
   location: {
-    lat: {
-      type: Number,
-      required: true,
-    },
-    lng: {
-      type: Number,
-      required: true,
-    },
+    lat: { type: Number, required: true },
+    lng: { type: Number, required: true },
   },
   creatorId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "User", // This will link the Place model to the User model, allowing us to fetch related places
+    ref: "User",
+  },
+  // New rating fields
+  ratings: [
+    {
+      userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+      },
+      rating: {
+        type: Number,
+        required: true,
+        enum: [1, -1], // 1 for like, -1 for dislike
+      },
+      createdAt: {
+        type: Date,
+        default: Date.now,
+      },
+    },
+  ],
+  totalLikes: {
+    type: Number,
+    default: 0,
+  },
+  totalDislikes: {
+    type: Number,
+    default: 0,
   },
 });
 

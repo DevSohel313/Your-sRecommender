@@ -2,14 +2,26 @@
 import { useState } from "react";
 import "./SearchBar.css";
 
-const SearchBar = ({ onSearch }) => {
+const SearchBar = ({ onSearch, onClearSearch }) => {
   const [searchType, setSearchType] = useState("title");
   const [searchQuery, setSearchQuery] = useState("");
 
   const searchHandler = (event) => {
     event.preventDefault();
-
+    console.log("Submitting search:", { searchType, searchQuery });
+    if (searchQuery.trim() === "") {
+      onClearSearch();
+      return;
+    }
     onSearch(searchType, searchQuery);
+  };
+
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+    if (value.trim() === "") {
+      onClearSearch();
+    }
   };
 
   return (
@@ -26,7 +38,7 @@ const SearchBar = ({ onSearch }) => {
         type="text"
         placeholder="Search places..."
         value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
+        onChange={handleInputChange}
         className="search-input"
       />
       <button type="submit" className="search-button">
@@ -35,5 +47,4 @@ const SearchBar = ({ onSearch }) => {
     </form>
   );
 };
-
 export default SearchBar;

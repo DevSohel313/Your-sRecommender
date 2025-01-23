@@ -136,65 +136,67 @@ const Authenticate = () => {
   return (
     <>
       <ErrorModal onClear={ErrorHandler} error={error} />
-      <Card className="authentication">
-        {isLoading && <LoadingSpinner asOverlay />}
-        {!isLoginMode ? <h2>Create Your Account</h2> : <h2>Login </h2>}
-        <hr />
-        <form onSubmit={authSubmitHandler}>
-          {!isLoginMode && (
-            <>
-              <Input
-                element="input"
-                id="name"
-                type="text"
-                label="Your Name"
-                validators={[VALIDATOR_REQUIRE()]}
-                errorText="Please enter a name."
-                onInput={inputHandler}
-              />
-              <ImageUpload id="image" center onInput={inputHandler} />
-            </>
-          )}
-          <Input
-            element="input"
-            id="email"
-            type="email"
-            label="E-Mail"
-            validators={[VALIDATOR_EMAIL()]}
-            errorText="Please enter a valid email address."
-            onInput={inputHandler}
-          />
-          <Input
-            element="input"
-            id="password"
-            type="password"
-            label="Password"
-            validators={[VALIDATOR_MINLENGTH(5)]}
-            errorText="Please enter a valid password, at least 5 characters."
-            onInput={inputHandler}
-          />
-          <Button type="submit" disabled={!formState.isValid}>
-            {isLoginMode ? "LOGIN" : "SIGNUP"}
-          </Button>
-          {isLoginMode && (
-            <Link
-              to="/user/forgot-password"
-              className="inline-block px-4 py-2 text-blue-500 hover:text-blue-900 
+      <div className="flex justify-center">
+        <Card className="authentication">
+          {isLoading && <LoadingSpinner asOverlay />}
+          {!isLoginMode ? <h2>Create Your Account</h2> : <h2>Login </h2>}
+          <hr />
+          <form onSubmit={authSubmitHandler}>
+            {!isLoginMode && (
+              <>
+                <Input
+                  element="input"
+                  id="name"
+                  type="text"
+                  label="Your Name"
+                  validators={[VALIDATOR_REQUIRE()]}
+                  errorText="Please enter a name."
+                  onInput={inputHandler}
+                />
+                <ImageUpload id="image" center onInput={inputHandler} />
+              </>
+            )}
+            <Input
+              element="input"
+              id="email"
+              type="email"
+              label="E-Mail"
+              validators={[VALIDATOR_EMAIL()]}
+              errorText="Please enter a valid email address."
+              onInput={inputHandler}
+            />
+            <Input
+              element="input"
+              id="password"
+              type="password"
+              label="Password"
+              validators={[VALIDATOR_MINLENGTH(5)]}
+              errorText="Please enter a valid password, at least 5 characters."
+              onInput={inputHandler}
+            />
+            <Button type="submit" disabled={!formState.isValid}>
+              {isLoginMode ? "LOGIN" : "SIGNUP"}
+            </Button>
+            {isLoginMode && (
+              <Link
+                to="/user/forgot-password"
+                className="inline-block px-4 py-2 text-blue-500 hover:text-blue-900 
     transition-all duration-300 hover:scale-105 
     relative after:content-[''] after:absolute after:w-0 
     after:h-0.5 after:left-0 after:bottom-0 
     after:bg-blue-500 hover:after:w-full 
     after:transition-all after:duration-300"
-            >
-              Forgot Password?
-            </Link>
-          )}
-        </form>
+              >
+                Forgot Password?
+              </Link>
+            )}
+          </form>
 
-        <Button inverse onClick={switchModeHandler} disabled={!hasUsers}>
-          SWITCH TO {isLoginMode ? "SIGNUP" : "LOGIN"}
-        </Button>
-      </Card>
+          <Button inverse onClick={switchModeHandler} disabled={!hasUsers}>
+            SWITCH TO {isLoginMode ? "SIGNUP" : "LOGIN"}
+          </Button>
+        </Card>
+      </div>
     </>
   );
 };

@@ -42,7 +42,7 @@ const UserProfile = () => {
         );
 
         setPlaceCount(placesData.places.length);
-      } catch (err) {
+      } catch (err) { 
         console.error("Error fetching profile:", err);
       }
     };
@@ -220,7 +220,6 @@ const UserProfile = () => {
                   </p>
                 </div>
               </div>
-
               <div className="flex justify-center gap-4">
                 <Button onClick={handleViewPlaces}>View Places</Button>
                 {isOwnProfile && (

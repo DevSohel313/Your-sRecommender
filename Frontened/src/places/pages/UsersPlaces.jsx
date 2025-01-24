@@ -12,6 +12,7 @@ const UsersPlaces = ({ searchResults, onClearSearch }) => {
 
   const deletePlace = async (placeId) => {
     try {
+      console.log("placeId: " + placeId);
       setLoadedPlaces((prevPlaces) =>
         prevPlaces.filter((place) => place._id !== placeId)
       );
@@ -25,6 +26,7 @@ const UsersPlaces = ({ searchResults, onClearSearch }) => {
           const responseData = await sendRequest(
             `http://localhost:5000/api/places/user/${uid}`
           );
+          console.log("Data: " + JSON.stringify(responseData));
           setLoadedPlaces(responseData.places);
         } catch (err) {}
       };
@@ -40,6 +42,7 @@ const UsersPlaces = ({ searchResults, onClearSearch }) => {
           <LoadingSpinner />
         </div>
       )}
+
       {searchResults ? (
         <PlaceList places={searchResults} onDelete={deletePlace} />
       ) : (

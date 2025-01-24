@@ -7,11 +7,11 @@ import { useContext } from "react";
 import authContext from "../../shared/context/auth-context";
 import { useLocation } from "react-router-dom";
 
-const PlaceList = (props) => {
+const   PlaceList = (props) => {
   const auth = useContext(authContext);
   const location = useLocation();
   const isAllPlacesPage = location.pathname === "/places/all";
-
+  console.log("props Received: ", props);
   if (!props.places || props.places.length === 0) {
     return (
       <div className="place-list center">
@@ -67,8 +67,8 @@ const PlaceList = (props) => {
             description={place.description}
             image={place.image}
             address={place.address}
-            location={place.location}
-            uid={place.creatorId}
+            coordinates={place.location}
+            user={place.creatorId}
             totalLikes={place.totalLikes}
             totalDislikes={place.totalDislikes}
             onDelete={props.onDelete}

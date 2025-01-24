@@ -45,7 +45,7 @@ const AllPlaces = ({ searchResults, onClearSearch }) => {
         </div>
       )}
       {!isLoading && loadedPlaces && (
-        <div className="place-list-container">
+        <div className="place-list-container ">
           <h2 className="text-xl font-bold mb-4 text-center">
             {searchResults ? "Search Results" : "All Places"}
           </h2>

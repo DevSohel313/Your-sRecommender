@@ -30,6 +30,7 @@ const Authenticate = () => {
         {
           ...formState.inputs,
           name: undefined, // Remove the name field
+          userName: undefined, // Remove the username field
           image: undefined,
         },
         formState.inputs.email.isValid && formState.inputs.password.isValid
@@ -40,6 +41,10 @@ const Authenticate = () => {
         {
           ...formState.inputs,
           name: {
+            value: "",
+            isValid: false,
+          },
+          userName: {
             value: "",
             isValid: false,
           },
@@ -78,6 +83,7 @@ const Authenticate = () => {
         formData.append("password", formState.inputs.password.value);
         formData.append("email", formState.inputs.email.value);
         formData.append("name", formState.inputs.name.value);
+        formData.append("userName", formState.inputs.userName.value);
         const data = await sendRequest(
           "http://localhost:5000/api/users/signup",
           "POST",
@@ -151,6 +157,15 @@ const Authenticate = () => {
                   label="Your Name"
                   validators={[VALIDATOR_REQUIRE()]}
                   errorText="Please enter a name."
+                  onInput={inputHandler}
+                />
+                <Input
+                  element="input"
+                  id="userName"
+                  type="text"
+                  label="Add your username"
+                  validators={[VALIDATOR_REQUIRE()]}
+                  errorText="Please enter a unique username."
                   onInput={inputHandler}
                 />
                 <ImageUpload id="image" center onInput={inputHandler} />

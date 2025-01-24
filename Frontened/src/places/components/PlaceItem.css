@@ -93,6 +93,7 @@
   background-color: #e6f3e6;
   border-color: #4ade4a;
   color: #2c7a2c;
+  font-size: 12px;
 }
 
 .rating-button.like:hover:not(:disabled) {
@@ -103,6 +104,7 @@
 .rating-button.like.active {
   background-color: #4ade4a;
   color: white;
+  font-size: 12px;
 }
 
 .rating-button.dislike {
@@ -179,4 +181,66 @@
     width: 100%;
     margin: 0.25rem 0;
   }
+}
+.comments-section {
+  margin-top: 1rem;
+  border-top: 1px solid #e0e0e0;
+  padding-top: 1rem;
+}
+
+.comment-input-container {
+  display: flex;
+  margin-bottom: 1rem;
+  margin-top: 1rem;
+}
+
+.comment-input {
+  flex-grow: 1;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  margin-right: 0.5rem;
+}
+
+.comment-submit-btn {
+  padding: 0.5rem 1rem;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 8px;
+}
+
+.comment {
+  background-color: #f9f9f9;
+  padding: 1rem;
+  margin-bottom: 0.5rem;
+  border-radius: 4px;
+}
+
+.comment-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.comment-username {
+  font-weight: bold;
+}
+
+.comment-date {
+  color: #888;
+  font-size: 0.8rem;
+}
+
+.place-item__ratings {
+  display: flex;
+  justify-content: space-between;
+}
+
+.comment-delete-btn {
+  background-color: #f44336;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
 }

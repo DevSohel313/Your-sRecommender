@@ -12,7 +12,8 @@ const getPlacesByPId = async (req, res, next) => {
   const placeId = req.params.pid;
   let place;
   try {
-    place = await model.findById(placeId);
+    place = await model.findById(placeId).populate("creatorId");
+    console.log("place", place);
     if (!place) {
       return next(
         new Error("Could not find a place for the provided id.", 404)
@@ -211,8 +212,6 @@ const searchPlaces = async (req, res, next) => {
         .filter((place) => place.score > 25);
     }
 
-    console.log(`Found ${places.length} matches for "${query}" in ${type}`);
-
     res.json({
       places: places.map((place) => ({
         id: place._id,
@@ -311,7 +310,7 @@ const getAllPlaces = async (req, res, next) => {
   try {
     places = await model
       .find({})
-      .populate("creatorId", "name image") // This will include user details if needed
+      .populate("creatorId") // This will include user details if needed
       .sort({ createdAt: -1 }); // Optional: sort by newest first
   } catch (err) {
     return next(
@@ -326,6 +325,112 @@ const getAllPlaces = async (req, res, next) => {
   res.json({
     places: places.map((place) => place.toObject({ getters: true })),
   });
+};
+exports.addComment = async (req, res, next) => {
+  const placeId = req.params.pid;
+  const { text } = req.body;
+
+  // Validate incoming data
+  if (!text || text.trim() === "") {
+    return res.status(400).json({ message: "Comment text cannot be empty" });
+  }
+
+  try {
+    // Ensure user is authenticated
+    if (!req.userData || !req.userData.userId) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+
+    const place = await model.findById(placeId);
+    if (!place) {
+      return res.status(404).json({ message: "Place not found" });
+    }
+
+    // Find the user to get their username
+    const user = await userModel.findById(req.userData.userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const newComment = {
+      userId: req.userData.userId,
+      username: user.name,
+      text: text.trim(),
+      createdAt: new Date(),
+    };
+
+    // Add comment to place
+    place.comments.push(newComment);
+    await place.save();
+
+    // Return the newly created comment
+    res.status(201).json({
+      message: "Comment added successfully",
+      comment: newComment,
+    });
+  } catch (err) {
+    console.error("Comment addition error:", err);
+
+    // Improved error handling
+    return res.status(500).json({
+      message: "Could not add comment",
+      error: err.message,
+    });
+  }
+};
+exports.getComments = async (req, res, next) => {
+  const placeId = req.params.pid;
+
+  try {
+    const place = await model.findById(placeId);
+    if (!place) {
+      return res.status(404).json({ message: "Place not found" });
+    }
+
+    // Sort comments by most recent first
+    const sortedComments = place.comments.sort(
+      (a, b) => b.createdAt - a.createdAt
+    );
+    console.log("comments", sortedComments);
+
+    res.json({
+      comments: sortedComments,
+    });
+  } catch (err) {
+    return next(new httpError("Could not fetch comments", 500));
+  }
+};
+
+exports.deleteComment = async (req, res, next) => {
+  const { pid: placeId, commentId } = req.params;
+  const userId = req.userData.userId;
+
+  try {
+    const place = await model.findById(placeId);
+    if (!place) {
+      return res.status(404).json({ message: "Place not found" });
+    }
+
+    // Find the comment and check if the user is the comment owner
+    const commentIndex = place.comments.findIndex(
+      (comment) =>
+        comment._id.toString() === commentId &&
+        comment.userId.toString() === userId
+    );
+
+    if (commentIndex === -1) {
+      return res
+        .status(403)
+        .json({ message: "Not authorized to delete this comment" });
+    }
+
+    place.comments.splice(commentIndex, 1);
+    await place.save();
+
+    res.json({ message: "Comment deleted successfully" });
+  } catch (err) {
+    return next(new httpError("Could not delete comment", 500));
+  }
 };
 exports.getPlacesByPId = getPlacesByPId;
 exports.getPlacesByUid = getPlacesByUid;

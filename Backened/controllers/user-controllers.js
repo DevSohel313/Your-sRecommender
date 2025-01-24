@@ -34,7 +34,7 @@ const userLogin = async (req, res, next) => {
       if (result) {
         const token = jwt.sign(
           { userId: user._id, email: user.email },
-          "my-secret-key"
+          process.env.JWT_SECRET_KEY
         );
         res
           .status(201)
@@ -48,9 +48,8 @@ const userLogin = async (req, res, next) => {
 
 const hasUsers = async (req, res) => {
   try {
-    console.log("fetching users...");
     const userCount = await model.find({});
-    console.log("usercnt", userCount);
+
     res.status(200).json({ hasUsers: userCount.length > 0 });
   } catch (err) {
     res.status(500).json({ message: "Fetching user data failed." });
@@ -59,21 +58,24 @@ const hasUsers = async (req, res) => {
 
 const forgotPassword = async (req, res, next) => {
   const email = req.body.email;
-  console.log(email);
   const user = await model.findOne({ email: email });
-  console.log(user._id);
-  if (user.length === 0) {
+
+  if (!user) {
     return next(new httpError(401, "No Such User Exists!!"));
   } else {
-    const token = jwt.sign({ id: user._id, email: email }, "my-secret-key", {
-      expiresIn: "1d",
-    });
-    //exow kkrz nbsn staa
+    const token = jwt.sign(
+      { id: user._id, email: email },
+      process.env.JWT_SECRET_KEY,
+      {
+        expiresIn: "1d",
+      }
+    );
+
     var transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: "sohaildarwajkarrocks@gmail.com",
-        pass: "exow kkrz nbsn staa",
+        user: process.env.USER_EMAIL,
+        pass: process.env.USER_PASS,
       },
       tls: {
         rejectUnauthorized: false, // Disable certificate validation
@@ -81,17 +83,17 @@ const forgotPassword = async (req, res, next) => {
     });
 
     var mailOptions = {
-      from: "sohaildarwajkarrocks@gmail.com",
-      to: "sohel.22210399@viit.ac.in",
+      from: process.env.USER_EMAIL,
+      to: email,
       subject: "Sending Email using Node.js",
       text: `http://localhost:5173/reset-password/${user._id}/${token}`,
     };
 
     transporter.sendMail(mailOptions, function (error, info) {
       if (error) {
-        console.log(error);
+        return next(new httpError(500, "Failed to send reset email"));
       } else {
-        console.log("Email sent Successfully");
+        res.json({ message: "Password reset link sent" });
       }
     });
     res.json("success");
@@ -99,15 +101,13 @@ const forgotPassword = async (req, res, next) => {
 };
 
 const resetPassword = async (req, res, next) => {
-  console.log(req.params);
-  console.log(req.body.newPassword);
   const { id, token } = req.params;
   const password = req.body.newPassword;
   const user = await model.findOne({ _id: id });
   if (!user) {
     return next(new httpError(404, "User not found"));
   }
-  const isTokenValid = jwt.verify(token, "my-secret-key");
+  const isTokenValid = jwt.verify(token, process.env.JWT_SECRET_KEY);
   if (!isTokenValid) {
     return next(new httpError(403, "Token is invalid or expired"));
   }
@@ -129,10 +129,10 @@ const resetPassword = async (req, res, next) => {
 
 const getUserById = async (req, res, next) => {
   const userId = req.params.userId;
-  console.log(userId);
+
   try {
     const user = await model.findById(userId, "-password");
-    console.log(user);
+
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -174,7 +174,7 @@ const updateUser = async (req, res, next) => {
 };
 
 const userSignUp = async (req, res, next) => {
-  const { name, email, password, image } = req.body;
+  const { name, email, password, userName } = req.body;
 
   let existingUser;
   try {
@@ -192,6 +192,7 @@ const userSignUp = async (req, res, next) => {
     }
     const user = await model.create({
       name,
+      userName,
       email,
       password: hash,
       places: [],
@@ -202,7 +203,7 @@ const userSignUp = async (req, res, next) => {
     try {
       token = jwt.sign(
         { userId: user._id, email: user.email },
-        "my-secret-key"
+        process.env.JWT_SECRET_KEY
       );
     } catch (err) {
       return next(new httpError(500, "Failed to generate token"));

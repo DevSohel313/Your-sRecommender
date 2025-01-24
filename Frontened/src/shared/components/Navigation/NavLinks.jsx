@@ -7,7 +7,6 @@ const NavLinks = ({ onClearSearch }) => {
   const location = useLocation();
   const auth = useContext(authContext);
   const isForgotPasswordPage = location.pathname === "/user/forgot-password";
-  const isHomePage = location.pathname === "/";
 
   const handleNavClick = () => {
     if (onClearSearch) {

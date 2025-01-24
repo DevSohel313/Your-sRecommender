@@ -19,7 +19,10 @@ Route.use(authCheck);
 // Rating routes
 Route.get("/:pid/userrating", placesController.getUserRating); // Get user's rating
 Route.post("/:pid/rate", placesController.RateThePlace); // Set/update rating
-
+// Comment routes
+Route.post("/:pid/comments", placesController.addComment);
+Route.get("/:pid/comments", placesController.getComments);
+Route.delete("/:pid/comments/:commentId", placesController.deleteComment);
 // Other protected routes
 Route.patch(
   "/:pid",

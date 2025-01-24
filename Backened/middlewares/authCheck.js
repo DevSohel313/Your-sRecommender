@@ -10,7 +10,7 @@ const authCheck = (req, res, next) => {
     if (!token) {
       return next(new httpError(401, "No token provided"));
     }
-    const decodedPayload = jwt.verify(token, "my-secret-key");
+    const decodedPayload = jwt.verify(token, process.env.JWT_SECRET_KEY);
     req.userData = { userId: decodedPayload.userId };
     next();
   } catch (err) {

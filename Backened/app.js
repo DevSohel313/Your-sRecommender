@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const placesRouter = require("./routes/places-route");
 const app = express();

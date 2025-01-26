@@ -13,7 +13,7 @@ import LoadingSpinner from "./shared/components/UIElements/LoadingSpinner";
 function App() {
   const Users = React.lazy(() => import("./user/pages/Users"));
   const NewPlace = React.lazy(() => import("./places/pages/NewPlace"));
-  const UsersPlaces = React.lazy(() => import("./places/pages/NewPlace"));
+  const UsersPlaces = React.lazy(() => import("./places//pages/UsersPlaces"));
   const ForgotPassword = React.lazy(() =>
     import("./user/pages/forgotPassword")
   );

@@ -4,10 +4,9 @@ const mongoose = require("mongoose");
 require("dotenv").config();
 
 const dbURI =
-  process.env.NODE_ENV === "production"
+  process.env.NODE_ENV == "production"
     ? process.env.MONGO_URI_PROD
     : process.env.MONGO_URI_DEV;
-
 console.log("Connecting to database with URI:", dbURI); // Check the URI value
 
 mongoose

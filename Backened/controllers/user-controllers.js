@@ -1,7 +1,7 @@
 const { validationResult } = require("express-validator");
 const httpError = require("../models/errorModel");
 const model = require("../models/user-model");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const mongoose = require("mongoose");
@@ -30,20 +30,17 @@ const userLogin = async (req, res, next) => {
   }
   if (!user) {
     return next(new httpError(404, "Invalid email or password!"));
+  }
+
+  const isMatch = bcrypt.compareSync(password, user.password);
+  if (isMatch) {
+    const token = jwt.sign(
+      { userId: user._id, email: user.email },
+      process.env.JWT_SECRET_KEY
+    );
+    res.status(201).json({ userId: user._id, email: user.email, token: token });
   } else {
-    bcrypt.compare(password, user.password, (err, result) => {
-      if (result) {
-        const token = jwt.sign(
-          { userId: user._id, email: user.email },
-          process.env.JWT_SECRET_KEY
-        );
-        res
-          .status(201)
-          .json({ userId: user._id, email: user.email, token: token });
-      } else {
-        return next(new httpError(404, "Invalid email or password!"));
-      }
-    });
+    return next(new httpError(404, "Invalid email or password!"));
   }
 };
 
@@ -113,7 +110,7 @@ const resetPassword = async (req, res, next) => {
     return next(new httpError(403, "Token is invalid or expired"));
   }
   bcrypt
-    .hash(password, 12)
+    .hashSync(password, 12)
     .then(async (hash) => {
       const updatedUser = await model.findOneAndUpdate(
         { _id: id },
@@ -189,7 +186,7 @@ const userSignUp = async (req, res, next) => {
     }
 
     // Hash password
-    const hash = await bcrypt.hash(password, 12);
+    const hash = await bcrypt.hashSync(password, 12);
 
     // Create user with session
     const user = await model.create(

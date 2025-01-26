@@ -177,16 +177,16 @@ const userSignUp = async (req, res, next) => {
 
   try {
     const { name, email, password, userName } = req.body;
-
+    console.log("req body", JSON.stringify(req.body));
     // Check existing user within transaction
     const existingUser = await model.findOne({ email }).session(session);
     if (existingUser) {
       await session.abortTransaction();
-      return next(new httpError(404, "User already exists"));
+      return res.status(404).json({ message: "User already exists" });
     }
-
+    console.log("file:", req.file);
     // Hash password
-    const hash = await bcrypt.hashSync(password, 12);
+    const hash = bcrypt.hashSync(password, 12);
 
     // Create user with session
     const user = await model.create(
@@ -220,7 +220,8 @@ const userSignUp = async (req, res, next) => {
   } catch (err) {
     await session.abortTransaction();
     session.endSession();
-    return next(new httpError(500, "Signup failed"));
+    console.error(err); // Log the error for debugging
+    return res.status(500).json({ message: "Signup failed" }); // Always send a JSON response
   }
 };
 

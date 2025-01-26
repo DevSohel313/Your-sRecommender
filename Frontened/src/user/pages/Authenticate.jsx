@@ -80,13 +80,14 @@ const Authenticate = () => {
     if (!isLoginMode) {
       try {
         const formData = new FormData();
+        console.log(formState.inputs.image.value);
         formData.append("image", formState.inputs.image.value);
         formData.append("password", formState.inputs.password.value);
         formData.append("email", formState.inputs.email.value);
         formData.append("name", formState.inputs.name.value);
         formData.append("userName", formState.inputs.userName.value);
         const data = await sendRequest(
-          "${import.meta.env.VITE_BACKENED_URL}/users/signup",
+          `${import.meta.env.VITE_BACKENED_URL}/users/signup`,
           "POST",
           formData,
           {

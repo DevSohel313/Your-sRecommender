@@ -1,14 +1,36 @@
-// models/user.js
 const mongoose = require("mongoose");
-const uniqueValidator = require("mongoose-unique-validator");
 
-const User = mongoose.Schema(
+const userSchema = new mongoose.Schema(
   {
-    name: { type: "string", required: "true" },
-    userName: { type: "string", unique: "true", maxlength: 10 },
-    email: { type: "string", required: "true", unique: true },
-    password: { type: "string", required: "true", minlength: 4 },
-    image: { type: "string" },
+    name: { type: String, required: true },
+    userName: {
+      type: String,
+      unique: true,
+      maxlength: 10,
+      validate: {
+        validator: async function (value) {
+          const existingUser = await this.constructor.findOne({
+            userName: value,
+          });
+          return !existingUser;
+        },
+        message: "Username already exists",
+      },
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      validate: {
+        validator: async function (value) {
+          const existingUser = await this.constructor.findOne({ email: value });
+          return !existingUser;
+        },
+        message: "Email already exists",
+      },
+    },
+    password: { type: String, required: true, minlength: 4 },
+    image: { type: String },
     places: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -19,14 +41,12 @@ const User = mongoose.Schema(
     resetTokenExpiration: { type: Date },
     createdAt: {
       type: Date,
-      default: Date.now, // This will automatically set the date when a user is created
+      default: Date.now,
     },
   },
   {
-    timestamps: true, // This will add createdAt and updatedAt fields automatically
+    timestamps: true,
   }
 );
 
-User.plugin(uniqueValidator);
-
-module.exports = mongoose.model("User", User);
+module.exports = mongoose.model("User", userSchema);

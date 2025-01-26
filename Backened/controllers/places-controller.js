@@ -133,7 +133,7 @@ const createNewPlace = async (req, res, next) => {
       await session.abortTransaction();
       return next(error);
     }
-
+     console.log("userData:", req.userData);
     const user = await userModel
       .findOne({ _id: req.userData.userId })
       .session(session);
@@ -160,6 +160,7 @@ const createNewPlace = async (req, res, next) => {
   } catch (err) {
     await session.abortTransaction();
     session.endSession();
+    console.log(err.message);
     return next(new httpError(500, "Failed to create place"));
   }
 };

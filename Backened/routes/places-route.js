@@ -12,9 +12,18 @@ Route.get("/search", placesController.searchPlaces);
 Route.get("/:pid", placesController.getPlacesByPId);
 Route.get("/user/:uid", placesController.getPlacesByUid);
 Route.get("/", placesController.getAllPlaces);
-
 // Apply authCheck middleware for all routes below this
 Route.use(authCheck);
+Route.post(
+  "/",
+  fileUpload.single("image"),
+  [
+    check("title").not().isEmpty(),
+    check("description").isLength({ min: 5 }),
+    check("address").not().isEmpty(),
+  ],
+  placesController.createNewPlace
+);
 
 // Rating routes
 Route.get("/:pid/userrating", placesController.getUserRating); // Get user's rating
@@ -30,15 +39,5 @@ Route.patch(
   placesController.updatePlacesByPId
 );
 Route.delete("/:pid", placesController.deletePlaceByPId);
-Route.post(
-  "/",
-  fileUpload.single("image"),
-  [
-    check("title").not().isEmpty(),
-    check("description").isLength({ min: 5 }),
-    check("address").not().isEmpty(),
-  ],
-  placesController.createNewPlace
-);
 
 module.exports = Route;

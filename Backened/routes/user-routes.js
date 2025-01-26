@@ -14,8 +14,11 @@ Route.patch(
   [check("name").not().isEmpty().withMessage("Name is required")],
   userController.updateUser
 );
+
+
 Route.get("/hasUsers", userController.hasUsers);
 Route.get("/:userId", userController.getUserById);
+
 
 Route.post(
   "/signup",

@@ -117,23 +117,23 @@ const NavLinks = ({ onClearSearch }) => {
                 </NavLink>
               </li>
             )}
-            {auth.isLoggedIn && (
-              <li>
-                <NavLink
-                  to="/about"
-                  onClick={handleNavClick}
-                  className={({ isActive }) =>
-                    `px-4 py-2 rounded-lg transition-all duration-200 ${
-                      isActive
-                        ? "bg-yellow-400 text-gray-900 shadow-md"
-                        : "text-gray-700 hover:bg-yellow-100"
-                    }`
-                  }
-                >
-                  About
-                </NavLink>
-              </li>
-            )}
+
+            <li>
+              <NavLink
+                to="/about"
+                onClick={handleNavClick}
+                className={({ isActive }) =>
+                  `px-4 py-2 rounded-lg transition-all duration-200 ${
+                    isActive
+                      ? "bg-yellow-400 text-gray-900 shadow-md"
+                      : "text-gray-700 hover:bg-yellow-100"
+                  }`
+                }
+              >
+                About
+              </NavLink>
+            </li>
+
             {auth.isLoggedIn && (
               <li>
                 <button

@@ -7,13 +7,14 @@ app.use(express.json());
 const model = require("../models/places-model");
 const userModel = require("../models/user-model");
 const fs = require("fs");
+const mongoose = require("mongoose");
 
 const getPlacesByPId = async (req, res, next) => {
   const placeId = req.params.pid;
   let place;
   try {
     place = await model.findById(placeId).populate("creatorId");
-    console.log("place", place);
+
     if (!place) {
       return next(
         new Error("Could not find a place for the provided id.", 404)
@@ -36,6 +37,7 @@ const getPlacesByUid = async (req, res, next) => {
   const UserWithPlaces = await userModel
     .findOne({ _id: uid })
     .populate("places");
+
   if (UserWithPlaces) {
     return res.json({ places: UserWithPlaces.places });
   } else {
@@ -112,41 +114,52 @@ const updatePlacesByPId = async (req, res, next) => {
 };
 
 const createNewPlace = async (req, res, next) => {
+  // Start a mongoose session
+  const session = await mongoose.startSession();
+
+  // Begin transaction
+  session.startTransaction();
+
   const error = validationResult(req);
   if (!error.isEmpty()) {
     return next(new httpError(400, "Please Enter Correct Details"));
   }
-
-  const { title, description, address } = req.body;
-  let coordinates;
   try {
-    coordinates = await getCoordsForAddress(address);
-  } catch (error) {
-    return next(error);
-  }
+    const { title, description, address } = req.body;
+    let coordinates;
+    try {
+      coordinates = await getCoordsForAddress(address);
+    } catch (error) {
+      await session.abortTransaction();
+      return next(error);
+    }
 
-  const createdPlace = new model({
-    title,
-    description,
-    image: req.file.path,
-    address,
-    location: coordinates,
-    creatorId: req.userData.userId,
-  });
-
-  try {
-    const user = await userModel.findOne({ _id: req.userData.userId });
+    const user = await userModel
+      .findOne({ _id: req.userData.userId })
+      .session(session);
     if (!user) {
+      await session.abortTransaction();
       return next(new httpError(404, "User not found"));
     }
+
+    const createdPlace = new model({
+      title,
+      description,
+      image: req.file.path,
+      address,
+      location: coordinates,
+      creatorId: req.userData.userId,
+    });
+
     // Save the place and update the user's places array
-    await createdPlace.save(); //
+    await createdPlace.save({ session }); //
     user.places.push(createdPlace._id); // Add the place's ID to the user's places array
-    await user.save(); // Save the updated user
+    await user.save({ session }); // Save the updated user
 
     return res.status(201).json(createdPlace);
   } catch (err) {
-    console.log(err);
+    await session.abortTransaction();
+    session.endSession();
     return next(new httpError(500, "Failed to create place"));
   }
 };
@@ -184,12 +197,14 @@ const searchPlaces = async (req, res, next) => {
     };
 
     if (type === "title") {
-      places = await model.find({
-        $or: [
-          { title: searchRegex },
-          { description: searchRegex }, // Optional: include description in title search
-        ],
-      });
+      places = await model
+        .find({
+          $or: [
+            { title: searchRegex },
+            { description: searchRegex }, // Optional: include description in title search
+          ],
+        })
+        .populate("creatorId");
 
       // Score and sort results
       places = places
@@ -200,7 +215,7 @@ const searchPlaces = async (req, res, next) => {
         .sort((a, b) => b.score - a.score)
         .filter((place) => place.score > 25); // Only return relevant matches
     } else if (type === "city") {
-      places = await model.find({ address: searchRegex });
+      places = await model.find({ address: searchRegex }).populate("creatorId");
 
       // Score and sort results
       places = places
@@ -220,7 +235,10 @@ const searchPlaces = async (req, res, next) => {
         image: place.image,
         address: place.address,
         location: place.location,
-        creatorId: place.creator,
+        creatorId: place.creatorId,
+        totalLikes: place.totalLikes,
+        totalDislikes: place.totalDislikes,
+        comments: place.comments,
       })),
     });
   } catch (err) {
@@ -326,7 +344,7 @@ const getAllPlaces = async (req, res, next) => {
     places: places.map((place) => place.toObject({ getters: true })),
   });
 };
-exports.addComment = async (req, res, next) => {
+const addComment = async (req, res, next) => {
   const placeId = req.params.pid;
   const { text } = req.body;
 
@@ -353,6 +371,7 @@ exports.addComment = async (req, res, next) => {
     }
 
     const newComment = {
+      _id: new mongoose.Types.ObjectId(),
       userId: req.userData.userId,
       username: user.name,
       text: text.trim(),
@@ -370,15 +389,13 @@ exports.addComment = async (req, res, next) => {
     });
   } catch (err) {
     console.error("Comment addition error:", err);
-
-    // Improved error handling
     return res.status(500).json({
       message: "Could not add comment",
       error: err.message,
     });
   }
 };
-exports.getComments = async (req, res, next) => {
+const getComments = async (req, res, next) => {
   const placeId = req.params.pid;
 
   try {
@@ -391,7 +408,6 @@ exports.getComments = async (req, res, next) => {
     const sortedComments = place.comments.sort(
       (a, b) => b.createdAt - a.createdAt
     );
-    console.log("comments", sortedComments);
 
     res.json({
       comments: sortedComments,
@@ -401,7 +417,7 @@ exports.getComments = async (req, res, next) => {
   }
 };
 
-exports.deleteComment = async (req, res, next) => {
+const deleteComment = async (req, res, next) => {
   const { pid: placeId, commentId } = req.params;
   const userId = req.userData.userId;
 
@@ -411,25 +427,36 @@ exports.deleteComment = async (req, res, next) => {
       return res.status(404).json({ message: "Place not found" });
     }
 
-    // Find the comment and check if the user is the comment owner
-    const commentIndex = place.comments.findIndex(
-      (comment) =>
-        comment._id.toString() === commentId &&
-        comment.userId.toString() === userId
+    // Find the specific comment
+    const comment = place.comments.find(
+      (comment) => comment._id.toString() === commentId
     );
 
-    if (commentIndex === -1) {
+    if (!comment) {
+      return res.status(404).json({ message: "Comment not found" });
+    }
+
+    // Check if the current user is the comment owner
+    // Convert both to strings to ensure accurate comparison
+    if (comment.userId.toString() !== userId.toString()) {
       return res
         .status(403)
         .json({ message: "Not authorized to delete this comment" });
     }
 
-    place.comments.splice(commentIndex, 1);
+    // Remove the comment
+    place.comments = place.comments.filter(
+      (comment) => comment._id.toString() !== commentId
+    );
     await place.save();
 
     res.json({ message: "Comment deleted successfully" });
   } catch (err) {
-    return next(new httpError("Could not delete comment", 500));
+    console.error("Comment deletion error:", err);
+    return res.status(500).json({
+      message: "Could not delete comment",
+      error: err.message,
+    });
   }
 };
 exports.getPlacesByPId = getPlacesByPId;
@@ -441,3 +468,6 @@ exports.searchPlaces = searchPlaces;
 exports.RateThePlace = RateThePlace;
 exports.getUserRating = getUserRating;
 exports.getAllPlaces = getAllPlaces;
+exports.deleteComment = deleteComment;
+exports.getComments = getComments;
+exports.addComment = addComment;

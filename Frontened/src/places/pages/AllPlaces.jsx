@@ -6,14 +6,14 @@ import { useHttp } from "../../shared/hooks/http-hook";
 
 const AllPlaces = ({ searchResults, onClearSearch }) => {
   const [loadedPlaces, setLoadedPlaces] = useState([]);
-  const { isLoading, error, sendRequest, clearError } = useHttp();
+  const { isLoading, error, sendRequest, ErrorHandler } = useHttp();
 
   // Fetch all places initially
   useEffect(() => {
     const fetchPlaces = async () => {
       try {
         const responseData = await sendRequest(
-          "http://localhost:5000/api/places"
+          `${import.meta.env.VITE_BACKENED_URL}/places`
         );
         setLoadedPlaces(responseData.places);
       } catch (err) {
@@ -38,7 +38,7 @@ const AllPlaces = ({ searchResults, onClearSearch }) => {
 
   return (
     <>
-      <ErrorModal error={error} onClear={clearError} />
+      <ErrorModal error={error} onClear={ErrorHandler} />
       {isLoading && (
         <div className="center">
           <LoadingSpinner />

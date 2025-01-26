@@ -8,7 +8,7 @@ const SearchBar = ({ onSearch, onClearSearch }) => {
 
   const searchHandler = (event) => {
     event.preventDefault();
-    console.log("Submitting search:", { searchType, searchQuery });
+   
     if (searchQuery.trim() === "") {
       onClearSearch();
       return;

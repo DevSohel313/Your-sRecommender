@@ -7,12 +7,11 @@ import { useHttp } from "../../shared/hooks/http-hook";
 
 const UsersPlaces = ({ searchResults, onClearSearch }) => {
   const [loadedPlaces, setLoadedPlaces] = useState([]);
-  const { isLoading, error, sendRequest, clearError } = useHttp();
+  const { isLoading, error, sendRequest, ErrorHandler } = useHttp();
   const { uid } = useParams();
 
   const deletePlace = async (placeId) => {
     try {
-      console.log("placeId: " + placeId);
       setLoadedPlaces((prevPlaces) =>
         prevPlaces.filter((place) => place._id !== placeId)
       );
@@ -24,9 +23,9 @@ const UsersPlaces = ({ searchResults, onClearSearch }) => {
       const fetchPlaces = async () => {
         try {
           const responseData = await sendRequest(
-            `http://localhost:5000/api/places/user/${uid}`
+            `${import.meta.env.VITE_BACKENED_URL}/places/user/${uid}`
           );
-          console.log("Data: " + JSON.stringify(responseData));
+
           setLoadedPlaces(responseData.places);
         } catch (err) {}
       };
@@ -36,7 +35,7 @@ const UsersPlaces = ({ searchResults, onClearSearch }) => {
 
   return (
     <>
-      <ErrorModal error={error} onClear={clearError} />
+      <ErrorModal error={error} onClear={ErrorHandler} />
       {isLoading && (
         <div className="center">
           <LoadingSpinner />

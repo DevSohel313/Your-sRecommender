@@ -37,7 +37,7 @@ const UpdateProfile = () => {
       }
 
       await sendRequest(
-        `http://localhost:5000/api/users/${auth.creatorId}`,
+        `${import.meta.env.VITE_BACKENED_URL}/users/${auth.creatorId}`,
         "PATCH",
         formData,
         {

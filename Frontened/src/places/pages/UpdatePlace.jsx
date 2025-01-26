@@ -41,9 +41,9 @@ const UpdatePlace = () => {
     const fetchPlaces = async () => {
       try {
         const repsonse = await sendRequest(
-          `http://localhost:5000/api/places/${pid}`
+          `${import.meta.env.VITE_BACKENED_URL}/places/${pid}`
         );
-        console.log("res", repsonse);
+
         setLoadedPlace(repsonse);
         setFormData(
           {
@@ -66,7 +66,7 @@ const UpdatePlace = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     await sendRequest(
-      `http://localhost:5000/api/places/${pid}`,
+      `${import.meta.env.VITE_BACKENED_URL}/places/${pid}`,
       "PATCH",
       JSON.stringify({
         title: formState.inputs.title.value,

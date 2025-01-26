@@ -36,7 +36,9 @@ const ResetPassword = () => {
 
     try {
       await sendRequest(
-        `http://localhost:5000/api/users/reset-password/${id}/${token}`, // Correct URL format
+        `${
+          import.meta.env.VITE_BACKENED_URL
+        }/users/reset-password/${id}/${token}`, // Correct URL format
         "POST",
         JSON.stringify({ newPassword: formState.inputs.password.value }),
         { "Content-Type": "application/json" }

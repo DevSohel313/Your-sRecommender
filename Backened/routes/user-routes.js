@@ -19,7 +19,7 @@ Route.get("/:userId", userController.getUserById);
 
 Route.post(
   "/signup",
-  fileUpload.single("image"), 
+  fileUpload.single("image"),
   [
     check("name").not().isEmpty().withMessage("Please enter your name"),
     check("password")
@@ -29,7 +29,6 @@ Route.post(
   ],
 
   async (req, res, next) => {
-    console.log("File: ", req.file);
     const error = validationResult(req);
     if (!error.isEmpty()) {
       return res.status(422).json({ error: error.array() }); // Return errors to the frontend

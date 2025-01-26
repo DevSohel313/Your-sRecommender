@@ -16,7 +16,7 @@ const UserProfile = () => {
   const { userId } = useParams();
   const [userData, setUserData] = useState(null);
   const [placeCount, setPlaceCount] = useState(0);
-  const { isLoading, error, sendRequest, clearError } = useHttp();
+  const { isLoading, error, sendRequest, ErrorHandler } = useHttp();
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
@@ -30,7 +30,7 @@ const UserProfile = () => {
         }
 
         const userData = await sendRequest(
-          `http://localhost:5000/api/users/${targetUserId}`
+          `${import.meta.env.VITE_BACKENED_URL}/users/${targetUserId}`
         );
         if (!userData || !userData.user) {
           setNotFound(true);
@@ -38,11 +38,11 @@ const UserProfile = () => {
         }
         setUserData(userData.user);
         const placesData = await sendRequest(
-          `http://localhost:5000/api/places/user/${targetUserId}`
+          `${import.meta.env.VITE_BACKENED_URL}/places/user/${targetUserId}`
         );
 
         setPlaceCount(placesData.places.length);
-      } catch (err) { 
+      } catch (err) {
         console.error("Error fetching profile:", err);
       }
     };
@@ -120,7 +120,7 @@ const UserProfile = () => {
   }
   return (
     <>
-      <ErrorModal error={error} onClear={clearError} />
+      <ErrorModal error={error} onClear={ErrorHandler} />
 
       <div className="max-w-4xl mx-auto px-4 py-8">
         {isLoading && (
@@ -146,7 +146,9 @@ const UserProfile = () => {
                 <div className="w-36 h-36 rounded-full border-4 border-white overflow-hidden bg-white shadow-lg">
                   {userData.image ? (
                     <img
-                      src={`http://localhost:5000/${userData.image}`}
+                      src={`${import.meta.env.VITE_IMAGE_URL}/${
+                        userData.image
+                      }`}
                       alt={userData.name}
                       className="w-full h-full object-cover"
                     />

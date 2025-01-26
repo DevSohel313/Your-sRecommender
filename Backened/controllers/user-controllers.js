@@ -4,9 +4,10 @@ const model = require("../models/user-model");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
+const mongoose = require("mongoose");
 
 const sendResetEmail = require("../utils/emailHelper");
-const { request } = require("express");
+
 const getUsers = async (req, res, next) => {
   try {
     const allUsers = await model.find({}, "-password").populate("places");
@@ -174,42 +175,56 @@ const updateUser = async (req, res, next) => {
 };
 
 const userSignUp = async (req, res, next) => {
-  const { name, email, password, userName } = req.body;
+  const session = await mongoose.startSession();
+  session.startTransaction();
 
-  let existingUser;
   try {
-    existingUser = await model.findOne({ email });
-  } catch (err) {
-    return next(new httpError(400, "Something went wrong"));
-  }
-  if (existingUser) {
-    return next(new httpError(404, "User already exists"));
-  }
-  bcrypt.hash(password, 12, async (err, hash) => {
-    if (err) {
-      console.error("Error during password hashing:", err);
-      return next(new httpError(500, "Failed to hash password"));
-    }
-    const user = await model.create({
-      name,
-      userName,
-      email,
-      password: hash,
-      places: [],
-      image: req.file.path,
-    });
+    const { name, email, password, userName } = req.body;
 
-    let token;
-    try {
-      token = jwt.sign(
-        { userId: user._id, email: user.email },
-        process.env.JWT_SECRET_KEY
-      );
-    } catch (err) {
-      return next(new httpError(500, "Failed to generate token"));
+    // Check existing user within transaction
+    const existingUser = await model.findOne({ email }).session(session);
+    if (existingUser) {
+      await session.abortTransaction();
+      return next(new httpError(404, "User already exists"));
     }
-    res.status(201).json({ userId: user._id, email: user.email, token: token });
-  });
+
+    // Hash password
+    const hash = await bcrypt.hash(password, 12);
+
+    // Create user with session
+    const user = await model.create(
+      [
+        {
+          name,
+          userName,
+          email,
+          password: hash,
+          places: [],
+          image: req.file.path,
+        },
+      ],
+      { session }
+    );
+
+    // Generate token
+    const token = jwt.sign(
+      { userId: user._id, email: user.email },
+      process.env.JWT_SECRET_KEY
+    );
+
+    await session.commitTransaction();
+    session.endSession();
+
+    res.status(201).json({
+      userId: user._id,
+      email: user.email,
+      token: token,
+    });
+  } catch (err) {
+    await session.abortTransaction();
+    session.endSession();
+    return next(new httpError(500, "Signup failed"));
+  }
 };
 
 exports.getUsers = getUsers;

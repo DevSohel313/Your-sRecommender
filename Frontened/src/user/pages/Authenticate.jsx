@@ -11,6 +11,7 @@ import {
   VALIDATOR_EMAIL,
   VALIDATOR_REQUIRE,
   VALIDATOR_MINLENGTH,
+  VALIDATOR_MAXLENGTH,
 } from "../../shared/util/validators";
 import { ImageUpload } from "../../shared/components/FormElements/ImageUpload";
 import { useHttp } from "../../shared/hooks/http-hook";
@@ -85,7 +86,7 @@ const Authenticate = () => {
         formData.append("name", formState.inputs.name.value);
         formData.append("userName", formState.inputs.userName.value);
         const data = await sendRequest(
-          "http://localhost:5000/api/users/signup",
+          "${import.meta.env.VITE_BACKENED_URL}/users/signup",
           "POST",
           formData,
           {
@@ -100,7 +101,7 @@ const Authenticate = () => {
     } else {
       try {
         const data = await sendRequest(
-          "http://localhost:5000/api/users/login",
+          `${import.meta.env.VITE_BACKENED_URL}/users/login`,
           "POST",
           JSON.stringify({
             email: formState.inputs.email.value,
@@ -124,7 +125,7 @@ const Authenticate = () => {
     const fetchHasUsers = async () => {
       try {
         const data = await sendRequest(
-          "http://localhost:5000/api/users/hasUsers"
+          `${import.meta.env.VITE_BACKENED_URL}/users/hasUsers`
         );
 
         setHasUsers(data.hasUsers);
@@ -164,8 +165,8 @@ const Authenticate = () => {
                   id="userName"
                   type="text"
                   label="Add your username"
-                  validators={[VALIDATOR_REQUIRE()]}
-                  errorText="Please enter a unique username."
+                  validators={[VALIDATOR_REQUIRE(), VALIDATOR_MAXLENGTH(10)]}
+                  errorText="Please enter a unique username upto 10 characters"
                   onInput={inputHandler}
                 />
                 <ImageUpload id="image" center onInput={inputHandler} />

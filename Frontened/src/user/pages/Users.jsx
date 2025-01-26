@@ -15,7 +15,9 @@ const Users = ({ searchResults, onClearSearch }) => {
     if (!searchResults) {
       const fetchUsers = async () => {
         try {
-          const response = await sendRequest("http://localhost:5000/api/users");
+          const response = await sendRequest(
+            `${import.meta.env.VITE_BACKENED_URL}/users`
+          );
           setUserData(response.users);
         } catch (err) {
           console.log(err);

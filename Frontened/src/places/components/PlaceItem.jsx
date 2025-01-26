@@ -12,11 +12,10 @@ import { Link } from "react-router-dom";
 
 const PlaceItem = (props) => {
   // Existing state hooks
-  const { isLoading, error, sendRequest, Errorhandler } = useHttp();
+  const { isLoading, error, sendRequest, ErrorHandler } = useHttp();
   const auth = useContext(authContext);
   const [showMap, setShowMap] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
-
   // New state for comments
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
@@ -30,26 +29,34 @@ const PlaceItem = (props) => {
 
   // Fetch comments when component mounts or when place changes
   useEffect(() => {
-    const fetchComments = async () => {
-      if (auth.isLoggedIn && props.id) {
-        try {
-          const responseData = await sendRequest(
-            `http://localhost:5000/api/places/${props.id}/comments`,
-            "GET",
-            null,
-            {
-              Authorization: "Bearer " + auth.token,
-            }
-          );
-          console.log("comments", JSON.stringify(responseData));
-          setComments(responseData.comments || []);
-        } catch (err) {
-          console.error("Failed to fetch comments:", err);
+    // If comments are passed via props during search, use those
+    if (props.comments) {
+      setComments(props.comments);
+    } else {
+      // Existing logic to fetch comments if not in search results
+      const fetchComments = async () => {
+        if (auth.isLoggedIn && props.id) {
+          try {
+            const responseData = await sendRequest(
+              `${import.meta.env.VITE_BACKENED_URL}/places/${
+                props.id
+              }/comments`,
+              "GET",
+              null,
+              {
+                Authorization: "Bearer " + auth.token,
+              }
+            );
+
+            setComments(responseData.comments || []);
+          } catch (err) {
+            console.error("Failed to fetch comments:", err);
+          }
         }
-      }
-    };
-    fetchComments();
-  }, [auth.isLoggedIn, auth.token, props.id, sendRequest]);
+      };
+      fetchComments();
+    }
+  }, [auth.isLoggedIn, auth.token, props.id, props.comments, sendRequest]);
 
   useEffect(() => {}, []);
 
@@ -59,7 +66,7 @@ const PlaceItem = (props) => {
 
     try {
       const responseData = await sendRequest(
-        `http://localhost:5000/api/places/${props.id}/comments`,
+        `${import.meta.env.VITE_BACKENED_URL}/places/${props.id}/comments`,
         "POST",
         JSON.stringify({ text: newComment }),
         {
@@ -72,22 +79,20 @@ const PlaceItem = (props) => {
       setComments([responseData.comment, ...comments]);
       setNewComment("");
     } catch (err) {
-      // Improved error handling
       console.error(
         "Failed to add comment:",
         err.response?.data || err.message
       );
-
-      // Optional: Show error to user
       alert(err.response?.data?.message || "Failed to add comment");
     }
   };
-
   // Delete comment handler
   const handleDeleteComment = async (commentId) => {
     try {
       await sendRequest(
-        `http://localhost:5000/api/places/${props.id}/comments/${commentId}`,
+        `${import.meta.env.VITE_BACKENED_URL}/places/${
+          props.id
+        }/comments/${commentId}`,
         "DELETE",
         null,
         {
@@ -96,9 +101,17 @@ const PlaceItem = (props) => {
       );
 
       // Remove the deleted comment from the list
-      setComments(comments.filter((comment) => comment._id !== commentId));
+      setComments(
+        comments.filter((comment) => {
+          return comment._id !== commentId;
+        })
+      );
     } catch (err) {
-      console.error("Failed to delete comment:", err);
+      console.error("Failed to delete comment:", err.response || err);
+      alert(
+        err.response?.data?.message ||
+          "Failed to delete comment. Please try again."
+      );
     }
   };
 
@@ -113,7 +126,7 @@ const PlaceItem = (props) => {
     setShowConfirmModal(false);
     try {
       await sendRequest(
-        `http://localhost:5000/api/places/${props.id}`,
+        `${import.meta.env.VITE_BACKENED_URL}/places/${props.id}`,
         "DELETE",
         null,
         {
@@ -129,7 +142,7 @@ const PlaceItem = (props) => {
 
   return (
     <>
-      <ErrorModal onClear={Errorhandler} error={error} />
+      <ErrorModal onClear={ErrorHandler} error={error} />
 
       {/* Existing Map Modal */}
       <Modal
@@ -175,7 +188,7 @@ const PlaceItem = (props) => {
 
           <div className="place-item__image">
             <img
-              src={`http://localhost:5000/${props.image}`}
+              src={`${import.meta.env.VITE_IMAGE_URL}/${props.image}`}
               alt={props.place}
             />
           </div>
@@ -241,6 +254,7 @@ const PlaceItem = (props) => {
               {showComments &&
                 comments.map((comment) => (
                   <div key={comment._id} className="comment">
+                    {/* Add this line */}
                     <div className="comment-header">
                       <span className="comment-username">
                         {comment.username}
@@ -250,7 +264,6 @@ const PlaceItem = (props) => {
                       </span>
                     </div>
                     <p className="comment-text">{comment.text}</p>
-
                     {comment.userId === auth.creatorId && (
                       <button
                         onClick={() => handleDeleteComment(comment._id)}
@@ -272,16 +285,19 @@ const PlaceItem = (props) => {
             {/* Only show edit and delete buttons if:
               1. User is logged in 
               2. User is the creator of the place */}
-            {console.log("props;", props)}
 
-            {auth.isLoggedIn && auth.creatorId === props.user.id && (
-              <>
-                <Button to={`/places/${props.id}`}>EDIT</Button>
-                <Button danger onClick={showDeleteWarningHandler}>
-                  DELETE
-                </Button>
-              </>
-            )}
+            {auth.isLoggedIn &&
+              auth.creatorId ===
+                (typeof props.user === "object"
+                  ? props.user.id
+                  : props.user) && (
+                <>
+                  <Button to={`/places/${props.id}`}>EDIT</Button>
+                  <Button danger onClick={showDeleteWarningHandler}>
+                    DELETE
+                  </Button>
+                </>
+              )}
           </div>
         </Card>
       </li>

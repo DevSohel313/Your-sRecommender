@@ -26,7 +26,7 @@ const ForgotPassword = () => {
 
     try {
       await sendRequest(
-        "http://localhost:5000/api/users/forgot-password",
+        `${import.meta.env.VITE_BACKENED_URL}/users/forgot-password`,
         "POST",
         JSON.stringify({
           email: formState.inputs.email.value,

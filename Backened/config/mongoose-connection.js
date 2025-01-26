@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 require("dotenv").config();
+console.log("NODE_ENV:", process.env.NODE_ENV); // Debugging line
 const dbURI =
   process.env.NODE_ENV === "production"
     ? process.env.MONGO_URI_PROD

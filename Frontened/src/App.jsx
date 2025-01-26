@@ -15,7 +15,7 @@ function App() {
   const NewPlace = React.lazy(() => import("./places/pages/NewPlace"));
   const UsersPlaces = React.lazy(() => import("./places//pages/UsersPlaces"));
   const ForgotPassword = React.lazy(() =>
-    import("./user/pages/forgotPassword")
+    import("./user/pages/ForgotPassword")
   );
   const ResetPassword = React.lazy(() => import("./user/pages/ResetPassword"));
   const UpdatePlace = React.lazy(() => import("./places/pages/UpdatePlace"));

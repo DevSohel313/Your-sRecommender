@@ -9,7 +9,6 @@ const ErrorModal = (props) => {
     // First clear the error
     props.onClear();
     // Then navigate to home page
-    navigate("/");
   };
 
   return (

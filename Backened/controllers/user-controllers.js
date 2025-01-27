@@ -178,17 +178,20 @@ const userSignUp = async (req, res, next) => {
   try {
     const { name, email, password, userName } = req.body;
     console.log("req body", JSON.stringify(req.body));
-    // Check existing user within transaction
+
+    // Check for an existing user within the transaction
     const existingUser = await model.findOne({ email }).session(session);
     if (existingUser) {
       await session.abortTransaction();
       return res.status(404).json({ message: "User already exists" });
     }
+
     console.log("file:", req.file);
-    // Hash password
+
+    // Hash the password
     const hash = bcrypt.hashSync(password, 12);
 
-    // Create user with session
+    // Create the user with the session
     const user = await model.create(
       [
         {
@@ -203,25 +206,29 @@ const userSignUp = async (req, res, next) => {
       { session }
     );
 
-    // Generate token
+    // Access the created user's ID (user[0] since `create` returns an array)
+    const createdUser = user[0];
+
+    // Generate a token
     const token = jwt.sign(
-      { userId: user._id, email: user.email },
+      { userId: createdUser._id, email: createdUser.email },
       process.env.JWT_SECRET_KEY
     );
 
     await session.commitTransaction();
     session.endSession();
 
+    // Return the userId and token
     res.status(201).json({
-      userId: user._id,
-      email: user.email,
+      userId: createdUser._id, // Fix: Use createdUser._id instead of user._id
+      email: createdUser.email,
       token: token,
     });
   } catch (err) {
     await session.abortTransaction();
     session.endSession();
     console.error(err); // Log the error for debugging
-    return res.status(500).json({ message: "Signup failed" }); // Always send a JSON response
+    return res.status(500).json({ message: "Signup failed" });
   }
 };
 

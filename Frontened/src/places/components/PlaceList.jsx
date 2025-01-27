@@ -60,9 +60,6 @@ const PlaceList = (props) => {
       )}
       <ul className="place-list">
         {props.places.map((place) => {
-          {
-            console.log("place:", place);
-          }
           <PlaceItem
             key={place._id}
             id={place._id}

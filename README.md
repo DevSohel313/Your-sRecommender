@@ -1,6 +1,6 @@
 # YourPlaces - Social Place Sharing Platform
 
-![YourPlaces](https://raw.githubusercontent.com/DevSohel313/Your-s_Recommender/main/screenshots/HomePage.png)
+![YourPlaces](https://raw.githubusercontent.com/DevSohel313/Your-s_Recommender/main/HomePage.png)
 
 A full-stack MERN application that allows users to discover, share, and interact with interesting places around them.
 

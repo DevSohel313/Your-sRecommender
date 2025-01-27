@@ -37,14 +37,16 @@ A full-stack MERN application that allows users to discover, share, and interact
 - User statistics
 
 ## 🚀 Tech Stack
-
 ### Frontend
 
+- Vite for fast development environment
 - React.js
-- Redux for state management
+- Context Mangement using ContextAPI
 - Material-UI components
 - Responsive design
-- Google Maps integration
+- **OpenLayers** for maps integration
+- **LocationIQ** for address translation into coordinates
+
 
 ### Backend
 
@@ -66,11 +68,11 @@ cd Your-s_Recommender
 
 ```bash
 # Install backend dependencies
-cd backend
+cd Backend
 npm install
 
 # Install frontend dependencies
-cd ../frontend
+cd ../Frontend
 npm install
 ```
 
@@ -80,16 +82,22 @@ npm install
 Backend `.env`:
 
 ```env
-MONGODB_URI=your_mongodb_uri
-JWT_SECRET=your_jwt_secret
-PORT=5000
+MONGODB_URI_DEV=Your_Dev_URL
+MONGODB_URI_PROD=Your_prod_URL
+API_KEY=Your_API_KEY
+JWT_SECRET_KEY=YOUR_SECRET_KEY
+USER_EMAIL=YourEmail
+USER_PASS=YourPass
+NODE_ENV=development || production
+
 ```
 
 Frontend `.env`:
 
 ```env
-REACT_APP_BACKEND_URL=http://localhost:5000
-REACT_APP_GOOGLE_MAPS_API_KEY=your_google_maps_api_key
+VITE_BACKENED_UR=http://localhost:5000/api
+VITE_IMAGE_URL=http://localhost:5000
+
 ```
 
 4. Run the application
@@ -99,29 +107,30 @@ REACT_APP_GOOGLE_MAPS_API_KEY=your_google_maps_api_key
 npm start
 
 # Run frontend (from frontend directory)
-npm start
+npm run dev
 ```
 
 ## 📱 Usage
 
 1. **Registration/Login**
-
    - Create a new account or login with existing credentials
    - Reset password if forgotten
 
 2. **Creating Places**
-
    - Click on "Add Place" button
    - Fill in place details (title, description, address)
+   - Use **LocationIQ** for automatic address translation into coordinates
    - Upload images
-   - Submit to share with community
+   - Submit to share with the community
 
 3. **Interacting with Places**
    - Browse places on the homepage
+   - Use **OpenLayers** maps for interactive location display
    - Use search functionality to find specific places
    - Like/dislike places
    - Leave comments
    - Share places with others
+
 
 ## 🔐 API Endpoints
 
@@ -130,28 +139,33 @@ npm start
 ```
 POST /api/users/signup - Register new user
 POST /api/users/login - User login
-POST /api/users/reset-password - Password reset
+POST /api/users/reset-password/:id/:token - Password reset
+POST /api/users/forgot-password - Forgot Password
+GET /api/users/hasUsers - Check if users exist
+GET /api/users/:userId - Get user by ID
+PATCH /api/users/:userId - Update user (Name, Profile image)
 ```
 
 ### Places
 
 ```
 GET /api/places - Get all places
-GET /api/places/search - search for places
-GET /api/places/user/:uid - Get places of particular user
-GET /api/places/search - search for places
-GET /api/places/:pid - Get specific place
+GET /api/places/search - Search for places
+GET /api/places/user/:uid - Get places of a specific user
+GET /api/places/:pid - Get specific place by ID
 POST /api/places - Create new place
-PATCH /api/places/:id - Update place
-DELETE /api/places/:id - Delete place
+PATCH /api/places/:pid - Update place by ID (Title, Description)
+DELETE /api/places/:pid - Delete place by ID
 ```
 
 ### Social
 
 ```
-POST /api/places/:id/like - Like/unlike place
-POST /api/places/:id/comment - Add comment
-GET /api/places/:id/comments - Get place comments
+GET /api/places/:pid/userrating - Get user’s rating for a place
+POST /api/places/:pid/rate - Set/update rating for a place
+POST /api/places/:pid/comments - Add comment to a place
+GET /api/places/:pid/comments - Get all comments for a place
+DELETE /api/places/:pid/comments/:commentId - Delete a specific comment
 ```
 
 ## 🤝 Contributing

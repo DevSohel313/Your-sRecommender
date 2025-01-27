@@ -11,7 +11,7 @@ const PlaceList = (props) => {
   const auth = useContext(authContext);
   const location = useLocation();
   const isAllPlacesPage = location.pathname === "/places/all";
-  console.log("props recieved At PlaceList : ", JSON.stringify(props));
+  console.log("props recieved At PlaceList : ", props);
   if (!props.places || props.places.length === 0) {
     return (
       <div className="place-list center">

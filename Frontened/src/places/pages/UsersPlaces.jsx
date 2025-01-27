@@ -12,26 +12,11 @@ const UsersPlaces = ({ searchResults, onClearSearch }) => {
   const { isLoading, error, sendRequest, ErrorHandler } = useHttp();
   const { uid } = useParams();
 
-  const deletePlace = async (placeId) => {
-    try {
-      // First, verify the place was actually deleted in the backend
-      await sendRequest(
-        `${import.meta.env.VITE_BACKENED_URL}/places/${placeId}`,
-        "DELETE",
-        null,
-        {
-          Authorization: "Bearer " + auth.token, // You'll need to get auth context
-        }
-      );
-
-      // Only update the state after successful deletion
-      setLoadedPlaces((prevPlaces) =>
-        prevPlaces.filter((place) => place._id !== placeId)
-      );
-    } catch (err) {
-      // Handle any errors
-      console.error("Failed to delete place:", err);
-    }
+  const deletePlace = (placeId) => {
+    // Just update the state since deletion is already handled by PlaceItem
+    setLoadedPlaces((prevPlaces) =>
+      prevPlaces.filter((place) => place._id !== placeId)
+    );
   };
   useEffect(() => {
     if (!searchResults) {

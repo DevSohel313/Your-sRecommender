@@ -1,4 +1,5 @@
-# YourPlaces - Social Place Sharing Platform
+# YourPlaces - Social Place Sharing Platform ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+
 
 ![YourPlaces](https://raw.githubusercontent.com/DevSohel313/Your-s_Recommender/main/HomePage.png)
 

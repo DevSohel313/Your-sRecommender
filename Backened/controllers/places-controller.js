@@ -114,30 +114,36 @@ const updatePlacesByPId = async (req, res, next) => {
 };
 
 const createNewPlace = async (req, res, next) => {
-  // Start a mongoose session
+  console.log("Request received for creating a new place.");
   const session = await mongoose.startSession();
-
-  // Begin transaction
   session.startTransaction();
 
   const error = validationResult(req);
   if (!error.isEmpty()) {
+    console.log("Validation errors:", error.array());
     return next(new httpError(400, "Please Enter Correct Details"));
   }
+
   try {
     const { title, description, address } = req.body;
+    console.log("Request body:", req.body);
+
     let coordinates;
     try {
       coordinates = await getCoordsForAddress(address);
     } catch (error) {
+      console.error("Error getting coordinates:", error.message);
       await session.abortTransaction();
       return next(error);
     }
-     console.log("userData:", req.userData);
+
+    console.log("User data from token:", req.userData);
+
     const user = await userModel
       .findOne({ _id: req.userData.userId })
       .session(session);
     if (!user) {
+      console.error("User not found for ID:", req.userData.userId);
       await session.abortTransaction();
       return next(new httpError(404, "User not found"));
     }
@@ -145,25 +151,28 @@ const createNewPlace = async (req, res, next) => {
     const createdPlace = new model({
       title,
       description,
-      image: req.file.path,
+      image: req.file?.path || "No image provided",
       address,
       location: coordinates,
       creatorId: req.userData.userId,
     });
 
-    // Save the place and update the user's places array
-    await createdPlace.save({ session }); //
-    user.places.push(createdPlace._id); // Add the place's ID to the user's places array
-    await user.save({ session }); // Save the updated user
+    await createdPlace.save({ session });
+    user.places.push(createdPlace._id);
+    await user.save({ session });
 
+    await session.commitTransaction();
+    session.endSession();
+    console.log("Place created successfully:", createdPlace);
     return res.status(201).json(createdPlace);
   } catch (err) {
+    console.error("Error in createNewPlace:", err.message);
     await session.abortTransaction();
     session.endSession();
-    console.log(err.message);
     return next(new httpError(500, "Failed to create place"));
   }
 };
+
 // In your backend places controller (controllers/places-controllers.js)
 
 // Advanced search implementation with better matching and sorting

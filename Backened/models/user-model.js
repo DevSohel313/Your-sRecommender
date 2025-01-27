@@ -7,29 +7,14 @@ const userSchema = new mongoose.Schema(
       type: String,
       unique: true,
       maxlength: 10,
-      validate: {
-        validator: async function (value) {
-          const existingUser = await this.constructor.findOne({
-            userName: value,
-          });
-          return !existingUser;
-        },
-        message: "Username already exists",
-      },
+      required: true, // Ensure it's required
     },
     email: {
       type: String,
       required: true,
       unique: true,
-      validate: {
-        validator: async function (value) {
-          const existingUser = await this.constructor.findOne({ email: value });
-          return !existingUser;
-        },
-        message: "Email already exists",
-      },
     },
-    password: { type: String, required: true, minlength: 4 },
+    password: { type: String, required: true, minlength: 5 },
     image: { type: String },
     places: [
       {
@@ -48,5 +33,7 @@ const userSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+module.exports = mongoose.model("User", userSchema);
 
 module.exports = mongoose.model("User", userSchema);

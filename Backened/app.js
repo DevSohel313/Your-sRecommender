@@ -10,7 +10,7 @@ const cors = require("cors");
 const httpError = require("./models/errorModel");
 app.use(
   cors({
-    origin: "http://localhost:5173", // Your frontend's URL
+    origin: "https://yourplaces-frontened.onrender.com/", // Your frontend's URL
     credentials: true, // Allow cookies and credentials
   })
 );

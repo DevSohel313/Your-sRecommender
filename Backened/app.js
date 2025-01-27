@@ -14,10 +14,11 @@ app.use(
     credentials: true, // Allow cookies and credentials
   })
 );
-app.use("/public/images/", express.static(path.join("public", "images")));
+
 const cookieParser = require("cookie-parser");
 app.use(cookieParser());
 app.use(express.json());
+app.use("/public/images/", express.static(path.join("public", "images")));
 app.use("/api/places", placesRouter);
 app.use("/api/users", userRouter);
 

@@ -75,7 +75,7 @@ const NewPlace = () => {
 
         <div className="p-6 space-y-4">
           {isLoading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-80 z-50">
+            <div className="center  ">
               <LoadingSpinner />
             </div>
           )}

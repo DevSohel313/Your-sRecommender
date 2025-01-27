@@ -7,17 +7,20 @@ import { useHttp } from "../../shared/hooks/http-hook";
 import { useContext } from "react";
 import authContext from "../../shared/context/auth-context";
 const UsersPlaces = ({ searchResults, onClearSearch }) => {
-  const auth = useContext(authContext);
   const [loadedPlaces, setLoadedPlaces] = useState([]);
   const { isLoading, error, sendRequest, ErrorHandler } = useHttp();
   const { uid } = useParams();
 
   const deletePlace = (placeId) => {
+    console.log("Place deleted:", placeId);
     // Just update the state since deletion is already handled by PlaceItem
     setLoadedPlaces((prevPlaces) =>
       prevPlaces.filter((place) => place._id !== placeId)
     );
   };
+  useEffect(() => {
+    console.log("Updated places:", loadedPlaces || searchResults);
+  }, [loadedPlaces, searchResults]);
   useEffect(() => {
     if (!searchResults) {
       const fetchPlaces = async () => {

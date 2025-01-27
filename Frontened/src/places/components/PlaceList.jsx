@@ -59,7 +59,10 @@ const PlaceList = (props) => {
         </div>
       )}
       <ul className="place-list">
-        {props.places.map((place) => (
+        {props.places.map((place) => {
+          {
+            console.log("place:", place);
+          }
           <PlaceItem
             key={place._id}
             id={place._id}
@@ -73,8 +76,8 @@ const PlaceList = (props) => {
             totalDislikes={place.totalDislikes}
             onDelete={props.onDelete}
             comments={place.comments}
-          />
-        ))}
+          />;
+        })}
       </ul>
     </>
   );

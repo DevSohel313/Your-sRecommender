@@ -133,6 +133,7 @@ const PlaceItem = (props) => {
           Authorization: "Bearer " + auth.token,
         }
       );
+      console.log("Deleting place with ID:", props.id);
 
       // After successful deletion in the backend, notify parent component
       if (props.onDelete) {

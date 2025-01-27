@@ -19,9 +19,7 @@ const Users = ({ searchResults, onClearSearch }) => {
             `${import.meta.env.VITE_BACKENED_URL}/users`
           );
           setUserData(response.users);
-        } catch (err) {
-          console.log(err);
-        }
+        } catch (err) {}
       };
       fetchUsers();
     }

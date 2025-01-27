@@ -11,7 +11,7 @@ const PlaceList = (props) => {
   const auth = useContext(authContext);
   const location = useLocation();
   const isAllPlacesPage = location.pathname === "/places/all";
-  console.log("props recieved At PlaceList : ", props);
+
   if (!props.places || props.places.length === 0) {
     return (
       <div className="place-list center">
@@ -59,7 +59,7 @@ const PlaceList = (props) => {
         </div>
       )}
       <ul className="place-list">
-        {props.places.map((place) => {
+        {props.places.map((place) => (
           <PlaceItem
             key={place._id}
             id={place._id}
@@ -73,8 +73,8 @@ const PlaceList = (props) => {
             totalDislikes={place.totalDislikes}
             onDelete={props.onDelete}
             comments={place.comments}
-          />;
-        })}
+          />
+        ))}
       </ul>
     </>
   );

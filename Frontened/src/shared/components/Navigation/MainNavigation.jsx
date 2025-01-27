@@ -32,7 +32,7 @@ const MainNavigation = ({ onSearch, onClearSearch }) => {
         const responseData = await sendRequest(
           `${import.meta.env.VITE_BACKENED_URL}/users/${auth.creatorId}`
         );
-        console.log("profileData:", responseData);
+
         setUser(responseData.user);
       } catch (error) {
         setError("Could not fetch user details");

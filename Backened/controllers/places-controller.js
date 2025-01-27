@@ -114,19 +114,19 @@ const updatePlacesByPId = async (req, res, next) => {
 };
 
 const createNewPlace = async (req, res, next) => {
-  console.log("Request received for creating a new place.");
+
   const session = await mongoose.startSession();
   session.startTransaction();
 
   const error = validationResult(req);
   if (!error.isEmpty()) {
-    console.log("Validation errors:", error.array());
+   
     return next(new httpError(400, "Please Enter Correct Details"));
   }
 
   try {
     const { title, description, address } = req.body;
-    console.log("Request body:", req.body);
+    
 
     let coordinates;
     try {
@@ -137,7 +137,7 @@ const createNewPlace = async (req, res, next) => {
       return next(error);
     }
 
-    console.log("User data from token:", req.userData);
+   
 
     const user = await userModel
       .findOne({ _id: req.userData.userId })
@@ -163,7 +163,7 @@ const createNewPlace = async (req, res, next) => {
 
     await session.commitTransaction();
     session.endSession();
-    console.log("Place created successfully:", createdPlace);
+    
     return res.status(201).json(createdPlace);
   } catch (err) {
     console.error("Error in createNewPlace:", err.message);

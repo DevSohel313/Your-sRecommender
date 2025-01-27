@@ -80,7 +80,7 @@ const Authenticate = () => {
     if (!isLoginMode) {
       try {
         const formData = new FormData();
-        console.log(formState.inputs.image.value);
+
         formData.append("image", formState.inputs.image.value);
         formData.append("password", formState.inputs.password.value);
         formData.append("email", formState.inputs.email.value);
@@ -133,9 +133,7 @@ const Authenticate = () => {
         if (!data.hasUsers) {
           setIsLoginMode(false); // Default to signup mode if no users exist
         }
-      } catch (err) {
-        console.error(err);
-      }
+      } catch (err) {}
     };
 
     fetchHasUsers();

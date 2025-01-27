@@ -8,12 +8,24 @@ const db = require("./config/mongoose-connection");
 const userRouter = require("./routes/user-routes");
 const cors = require("cors");
 const httpError = require("./models/errorModel");
+const allowedOrigins =
+  process.env.NODE_ENV === "production"
+    ? ["https://yourplaces-frontened.onrender.com"]
+    : ["http://localhost:5173"]; // Default Vite dev server URL
+
 app.use(
   cors({
-    origin: "https://yourplaces-frontened.onrender.com", // Your frontend's URL
-    credentials: true, // Allow cookies and credentials
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: "true",
   })
 );
+
 const cookieParser = require("cookie-parser");
 app.use(cookieParser());
 app.use(express.json());

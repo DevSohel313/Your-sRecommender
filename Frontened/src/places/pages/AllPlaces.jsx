@@ -51,7 +51,7 @@ const AllPlaces = ({ searchResults, onClearSearch }) => {
           </h2>
           <PlaceList
             places={loadedPlaces}
-            onPlaceDelete={placeDeletedHandler}
+            onDelete={placeDeletedHandler}
             searchResults={searchResults}
             onClearSearch={onClearSearch}
           />

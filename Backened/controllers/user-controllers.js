@@ -6,41 +6,39 @@ const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const mongoose = require("mongoose");
 
-const sendResetEmail = require("../utils/emailHelper");
-
-const getUsers = async (req, res, next) => {
+const getUsers = async (req, res) => {
   try {
     const allUsers = await model.find({}, "-password").populate("places");
-    res.json({ users: allUsers });
+    return res.status(200).json({ users: allUsers });
   } catch (err) {
-    return next(new httpError(500, "Something went wrong"));
+    return res.status(500).json({ message: "Failed to fetch users" });
   }
 };
 const userLogin = async (req, res, next) => {
   const error = validationResult(req);
   if (!error.isEmpty()) {
-    return next(new httpError(400, "Please Enter Correct Email or Password"));
-  }
-  const { email, password } = req.body;
-  let user;
-  try {
-    user = await model.findOne({ email });
-  } catch (err) {
-    return next(new httpError(500, "Something went wrong"));
-  }
-  if (!user) {
-    return next(new httpError(404, "Invalid email or password!"));
+    return res.status(400).json({ message: "Invalid input data" });
   }
 
-  const isMatch = bcrypt.compareSync(password, user.password);
-  if (isMatch) {
+  const { email, password } = req.body;
+  try {
+    const user = await model.findOne({ email });
+    if (!user) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
     const token = jwt.sign(
       { userId: user._id, email: user.email },
       process.env.JWT_SECRET_KEY
     );
-    res.status(201).json({ userId: user._id, email: user.email, token: token });
-  } else {
-    return next(new httpError(404, "Invalid email or password!"));
+    return res.status(200).json({ userId: user._id, email: user.email, token });
+  } catch (err) {
+    return res.status(500).json({ message: "Login failed, please try again" });
   }
 };
 
@@ -54,47 +52,42 @@ const hasUsers = async (req, res) => {
   }
 };
 
-const forgotPassword = async (req, res, next) => {
-  const email = req.body.email;
-  const user = await model.findOne({ email: email });
+const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+  try {
+    const user = await model.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
-  if (!user) {
-    return next(new httpError(401, "No Such User Exists!!"));
-  } else {
     const token = jwt.sign(
-      { id: user._id, email: email },
+      { id: user._id, email },
       process.env.JWT_SECRET_KEY,
-      {
-        expiresIn: "1d",
-      }
+      { expiresIn: "1d" }
     );
 
-    var transporter = nodemailer.createTransport({
+    const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
         user: process.env.USER_EMAIL,
         pass: process.env.USER_PASS,
       },
-      tls: {
-        rejectUnauthorized: false, // Disable certificate validation
-      },
+      tls: { rejectUnauthorized: false },
     });
 
-    var mailOptions = {
+    const mailOptions = {
       from: process.env.USER_EMAIL,
       to: email,
-      subject: "Sending Email using Node.js",
+      subject: "Password Reset Link",
       text: `http://localhost:5173/reset-password/${user._id}/${token}`,
     };
 
-    transporter.sendMail(mailOptions, function (error, info) {
-      if (error) {
-        return next(new httpError(500, "Failed to send reset email"));
-      } else {
-        res.json({ message: "Password reset link sent" });
-      }
-    });
-    res.json("success");
+    await transporter.sendMail(mailOptions);
+    return res.status(200).json({ message: "Password reset link sent" });
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ message: "Failed to process password reset request" });
   }
 };
 
@@ -103,11 +96,11 @@ const resetPassword = async (req, res, next) => {
   const password = req.body.newPassword;
   const user = await model.findOne({ _id: id });
   if (!user) {
-    return next(new httpError(404, "User not found"));
+    return res.status(404).json({ message: "User not found" });
   }
   const isTokenValid = jwt.verify(token, process.env.JWT_SECRET_KEY);
   if (!isTokenValid) {
-    return next(new httpError(403, "Token is invalid or expired"));
+    return res.status(401).json({ message: "Invalid or expired token" });
   }
   bcrypt
     .hashSync(password, 12)
@@ -117,11 +110,10 @@ const resetPassword = async (req, res, next) => {
         { password: hash },
         { new: true }
       );
-      res.json({ message: "Password updated successfully" });
+      return res.status(200).json({ message: "Password updated successfully" });
     })
     .catch((err) => {
-      console.log(err);
-      return next(new httpError(500, "Failed to hash password"));
+      return res.status(500).json({ message: "Password reset failed" });
     });
 };
 
@@ -177,7 +169,6 @@ const userSignUp = async (req, res, next) => {
 
   try {
     const { name, email, password, userName } = req.body;
-    console.log("req body", JSON.stringify(req.body));
 
     // Check for an existing user within the transaction
     const existingUser = await model.findOne({ email }).session(session);
@@ -185,8 +176,6 @@ const userSignUp = async (req, res, next) => {
       await session.abortTransaction();
       return res.status(404).json({ message: "User already exists" });
     }
-
-    console.log("file:", req.file);
 
     // Hash the password
     const hash = bcrypt.hashSync(password, 12);

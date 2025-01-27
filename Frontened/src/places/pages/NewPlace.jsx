@@ -48,7 +48,7 @@ const NewPlace = () => {
       formData.append("description", formState.inputs.description.value);
       formData.append("address", formState.inputs.address.value);
       formData.append("image", formState.inputs.image.value);
-      console.log("token:", auth.token);
+   
       await sendRequest(
         `${import.meta.env.VITE_BACKENED_URL}/places`,
         "POST",
@@ -59,7 +59,7 @@ const NewPlace = () => {
       );
       navigate("/");
     } catch (err) {
-      console.log(err);
+   
     }
   };
 

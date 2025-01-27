@@ -12,15 +12,12 @@ const UsersPlaces = ({ searchResults, onClearSearch }) => {
   const { uid } = useParams();
 
   const deletePlace = (placeId) => {
-    console.log("Place deleted:", placeId);
     // Just update the state since deletion is already handled by PlaceItem
     setLoadedPlaces((prevPlaces) =>
       prevPlaces.filter((place) => place._id !== placeId)
     );
   };
-  useEffect(() => {
-    console.log("Updated places:", loadedPlaces || searchResults);
-  }, [loadedPlaces, searchResults]);
+
   useEffect(() => {
     if (!searchResults) {
       const fetchPlaces = async () => {

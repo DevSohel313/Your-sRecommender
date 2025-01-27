@@ -58,8 +58,6 @@ const PlaceItem = (props) => {
     }
   }, [auth.isLoggedIn, auth.token, props.id, props.comments, sendRequest]);
 
-  useEffect(() => {}, []);
-
   // Add comment handler
   const handleAddComment = async () => {
     if (!newComment.trim() || !auth.isLoggedIn) return;
@@ -121,7 +119,7 @@ const PlaceItem = (props) => {
 
   const showDeleteWarningHandler = () => setShowConfirmModal(true);
   const cancelDeleteHandler = () => setShowConfirmModal(false);
-  console.log("props received at placeitem: ", props);
+
   const confirmDeleteHandler = async () => {
     setShowConfirmModal(false);
     try {
@@ -133,7 +131,6 @@ const PlaceItem = (props) => {
           Authorization: "Bearer " + auth.token,
         }
       );
-      console.log("Deleting place with ID:", props.id);
 
       // After successful deletion in the backend, notify parent component
       if (props.onDelete) {
@@ -147,7 +144,6 @@ const PlaceItem = (props) => {
   return (
     <>
       <ErrorModal onClear={ErrorHandler} error={error} />
-
       {/* Existing Map Modal */}
       <Modal
         show={showMap}

@@ -114,19 +114,16 @@ const updatePlacesByPId = async (req, res, next) => {
 };
 
 const createNewPlace = async (req, res, next) => {
-
   const session = await mongoose.startSession();
   session.startTransaction();
 
   const error = validationResult(req);
   if (!error.isEmpty()) {
-   
     return next(new httpError(400, "Please Enter Correct Details"));
   }
 
   try {
     const { title, description, address } = req.body;
-    
 
     let coordinates;
     try {
@@ -136,8 +133,6 @@ const createNewPlace = async (req, res, next) => {
       await session.abortTransaction();
       return next(error);
     }
-
-   
 
     const user = await userModel
       .findOne({ _id: req.userData.userId })
@@ -156,14 +151,14 @@ const createNewPlace = async (req, res, next) => {
       location: coordinates,
       creatorId: req.userData.userId,
     });
-
+    console.log("file:", req.file);
     await createdPlace.save({ session });
     user.places.push(createdPlace._id);
     await user.save({ session });
 
     await session.commitTransaction();
     session.endSession();
-    
+
     return res.status(201).json(createdPlace);
   } catch (err) {
     console.error("Error in createNewPlace:", err.message);
@@ -172,10 +167,6 @@ const createNewPlace = async (req, res, next) => {
     return next(new httpError(500, "Failed to create place"));
   }
 };
-
-// In your backend places controller (controllers/places-controllers.js)
-
-// Advanced search implementation with better matching and sorting
 
 const searchPlaces = async (req, res, next) => {
   const { type, query } = req.query;

@@ -121,7 +121,7 @@ const PlaceItem = (props) => {
 
   const showDeleteWarningHandler = () => setShowConfirmModal(true);
   const cancelDeleteHandler = () => setShowConfirmModal(false);
-
+  console.log("props received at placeitem: ", props);
   const confirmDeleteHandler = async () => {
     setShowConfirmModal(false);
     try {

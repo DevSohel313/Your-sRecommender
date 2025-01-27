@@ -125,16 +125,8 @@ const PlaceItem = (props) => {
   const confirmDeleteHandler = async () => {
     setShowConfirmModal(false);
     try {
-      await sendRequest(
-        `${import.meta.env.VITE_BACKENED_URL}/places/${props.id}`,
-        "DELETE",
-        null,
-        {
-          Authorization: "Bearer " + auth.token,
-        }
-      );
-
-      props.onDelete(props.id);
+      // Let the parent component handle the deletion
+      await props.onDelete(props.id);
     } catch (err) {
       console.error("Deleting place failed:", err);
     }
